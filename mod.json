@@ -1,0 +1,14 @@
+{
+    "Name": "IttyBittyLivingSpace",
+    "Enabled": true,
+    "Version": "0.1.0",
+    "Description": "Makes the tight storage aboard dropships more expensive.",
+    "Author": "IceRaptor",
+    "Website": "https://github.com/IceRaptor/IttyBittyLivingSpace",
+    "Contact": "",
+    "DLL": "IttyBittyLivingSpace.dll",
+    "DependsOn" : [ ],
+    "Settings": {
+        "Debug" : false,
+    }
+}
