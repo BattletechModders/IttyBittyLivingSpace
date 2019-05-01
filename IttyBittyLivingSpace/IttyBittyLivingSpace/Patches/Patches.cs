@@ -44,13 +44,15 @@ namespace IttyBittyLivingSpace {
             Mod.Log.Info($"SGCQSS:RD - entered. Parsing current keys.");
             List<KeyValuePair<string, int>> currentKeys = GetCurrentKeys(___SectionOneExpensesList, ___simState);
 
-            int gearStorageCost = Helper.CalculateGearCost(___simState);
-            currentKeys.Add(new KeyValuePair<string, int>("Storage: Gear", gearStorageCost));
+            double gearInventorySize = Helper.GetGearInventorySize(___simState);
+            int gearStorageCost = Helper.CalculateGearCost(___simState, gearInventorySize);
+            currentKeys.Add(new KeyValuePair<string, int>($"Storage: Gear ({gearInventorySize} units)", gearStorageCost));
 
-            int mechPartsStorageCost = Helper.CalculateMechPartsCost(___simState);
-            currentKeys.Add(new KeyValuePair<string, int>("Storage: Mech Parts", mechPartsStorageCost));
+            double mechPartsTonnage = Helper.GetMechPartsTonnage(___simState);
+            int mechPartsStorageCost = Helper.CalculateMechPartsCost(___simState, mechPartsTonnage);
+            currentKeys.Add(new KeyValuePair<string, int>($"Storage: Mech Parts ({mechPartsTonnage} tons)", mechPartsStorageCost));
 
-            currentKeys.Sort((a, b) => (a.Value.CompareTo(b.Value)));
+            currentKeys.Sort(new ExpensesSorter());
 
             Mod.Log.Info($"SGCQSS:RD - Clearing items");
             ClearListLineItems(___SectionOneExpensesList, ___simState);
