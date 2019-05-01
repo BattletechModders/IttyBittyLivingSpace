@@ -40,12 +40,12 @@ namespace IttyBittyLivingSpace {
         public static int CalculateGearCost(SimGameState sgs, double totalUnits) {
             Mod.Log.Info($" === Calculating Gear Costs === ");
 
-            double factoredSize = Math.Ceiling(totalUnits * Mod.Config.EquipmentFactor);
-            Mod.Log.Info($"  totalUnits:{totalUnits} x factor:{Mod.Config.EquipmentFactor} = {factoredSize}");
+            double factoredSize = Math.Ceiling(totalUnits * Mod.Config.GearFactor);
+            Mod.Log.Info($"  totalUnits:{totalUnits} x factor:{Mod.Config.GearFactor} = {factoredSize}");
 
-            double scaledUnits = Math.Pow(factoredSize, 2);
-            int totalCost = (int)(Mod.Config.EquipmentCostPerUnit * scaledUnits);
-            Mod.Log.Info($"  scaledUnits:{scaledUnits} x costPerUnit:{Mod.Config.EquipmentCostPerUnit} = {totalCost}");
+            double scaledUnits = Math.Pow(factoredSize, Mod.Config.GearExponent);
+            int totalCost = (int)(Mod.Config.GearCostPerUnit * scaledUnits);
+            Mod.Log.Info($"  scaledUnits:{scaledUnits} x costPerUnit:{Mod.Config.GearCostPerUnit} = {totalCost}");
 
             return totalCost;
         }
@@ -77,12 +77,12 @@ namespace IttyBittyLivingSpace {
         public static int CalculateMechPartsCost(SimGameState sgs, double totalTonnage) {
             Mod.Log.Info($" === Calculating Mech Parts === ");
 
-            double factoredTonnage = Math.Ceiling(totalTonnage * Mod.Config.EquipmentFactor);
-            Mod.Log.Info($"  totalUnits:{totalTonnage} x factor:{Mod.Config.EquipmentFactor} = {factoredTonnage}");
+            double factoredTonnage = Math.Ceiling(totalTonnage * Mod.Config.GearFactor);
+            Mod.Log.Info($"  totalUnits:{totalTonnage} x factor:{Mod.Config.GearFactor} = {factoredTonnage}");
 
-            double scaledTonnage = Math.Pow(factoredTonnage, 2);
-            int totalCost = (int)(Mod.Config.EquipmentCostPerUnit * scaledTonnage);
-            Mod.Log.Info($"  scaledTonnage:{scaledTonnage} x costPerUnit:{Mod.Config.EquipmentCostPerUnit} = {totalCost}");
+            double scaledTonnage = Math.Pow(factoredTonnage, Mod.Config.MechPartsExponent);
+            int totalCost = (int)(Mod.Config.GearCostPerUnit * scaledTonnage);
+            Mod.Log.Info($"  scaledTonnage:{scaledTonnage} x costPerUnit:{Mod.Config.GearCostPerUnit} = {totalCost}");
 
             return totalCost;
         }

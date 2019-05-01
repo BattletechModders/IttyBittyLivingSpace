@@ -9,6 +9,12 @@
     "DLL": "IttyBittyLivingSpace.dll",
     "DependsOn" : [ ],
     "Settings": {
-        "Debug" : false,
+        "Debug" : true,
+        "GearFactor" : 1.0f,
+        "GearCostPerUnit" : 100,
+        "GearExponent" : 3,
+        "MechPartsFactor" : 1.0f,
+        "MechPartsCostPerTon" : 100,
+        "MechPartsExponent" : 3,
     }
 }
