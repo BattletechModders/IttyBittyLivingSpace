@@ -54,13 +54,13 @@ namespace IttyBittyLivingSpace {
             double totalTonnage = 0;
             foreach (ChassisDef cDef in sgs.GetAllInventoryMechDefs(true)) {
                 int itemCount = cDef.MechPartCount;
-                Mod.Log.Debug($"  ChassisDef: {cDef.Description.Id} has count: x{cDef.MechPartCount} with max: {cDef.MechPartMax}");
+                Mod.Log.Debug($"ChassisDef: {cDef.Description.Id} has count: x{cDef.MechPartCount} with max: x{cDef.MechPartMax}");
 
                 if (cDef.MechPartCount == 0) {
                     Mod.Log.Debug($"  Complete chassis, adding tonnage:{cDef.Tonnage}");
                     totalTonnage += cDef.Tonnage;
                 } else {
-                    float mechPartRatio = (cDef.MechPartCount / cDef.MechPartMax);
+                    float mechPartRatio = (float)cDef.MechPartCount / (float)cDef.MechPartMax;
                     float fractionalTonnage = cDef.Tonnage * mechPartRatio;
                     Mod.Log.Debug($"  Mech parts ratio: {mechPartRatio} mechTonnage:{cDef.Tonnage} fractionalTonnage:{fractionalTonnage}");
 
@@ -77,11 +77,11 @@ namespace IttyBittyLivingSpace {
         public static int CalculateMechPartsCost(SimGameState sgs, double totalTonnage) {
             Mod.Log.Info($" === Calculating Mech Parts === ");
 
-            double factoredTonnage = Math.Ceiling(totalTonnage * Mod.Config.GearFactor);
-            Mod.Log.Info($"  totalUnits:{totalTonnage} x factor:{Mod.Config.GearFactor} = {factoredTonnage}");
+            double factoredTonnage = Math.Ceiling(totalTonnage * Mod.Config.MechPartsFactor);
+            Mod.Log.Info($"  totalUnits:{totalTonnage} x factor:{Mod.Config.MechPartsFactor} = {factoredTonnage}");
 
             double scaledTonnage = Math.Pow(factoredTonnage, Mod.Config.MechPartsExponent);
-            int totalCost = (int)(Mod.Config.GearCostPerUnit * scaledTonnage);
+            int totalCost = (int)(Mod.Config.MechPartsCostPerTon * scaledTonnage);
             Mod.Log.Info($"  scaledTonnage:{scaledTonnage} x costPerUnit:{Mod.Config.GearCostPerUnit} = {totalCost}");
 
             return totalCost;

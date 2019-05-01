@@ -9,11 +9,11 @@ namespace IttyBittyLivingSpace {
 
         public float GearFactor = 1.0f;
         public int GearCostPerUnit = 100;
-        public int GearExponent = 4;
+        public float GearExponent = 2.0f;
 
         public float MechPartsFactor = 1.0f;
-        public int MechPartsCostPerTon = 100;
-        public int MechPartsExponent = 4;
+        public int MechPartsCostPerTon = 10;
+        public float MechPartsExponent = 2.0f;
 
         public void LogConfig() {
             Mod.Log.Info("=== MOD CONFIG BEGIN ===");

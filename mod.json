@@ -10,11 +10,11 @@
     "DependsOn" : [ ],
     "Settings": {
         "Debug" : true,
-        "GearFactor" : 1.0f,
         "GearCostPerUnit" : 100,
-        "GearExponent" : 3,
-        "MechPartsFactor" : 1.0f,
-        "MechPartsCostPerTon" : 100,
-        "MechPartsExponent" : 3,
+        "GearFactor" : 1.0,
+        "GearExponent" : 2.0,
+        "MechPartsCostPerTon" : 20,
+        "MechPartsFactor" : 1.0,
+        "MechPartsExponent" : 2.0,
     }
 }
