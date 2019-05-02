@@ -22,7 +22,7 @@ namespace IttyBittyLivingSpace {
 
         public float UpkeepGearMulti = 0.2f;
 
-        public float UpkeepChassisMulti = 0.2f;
+        public float UpkeepChassisMulti = 0.02f;
 
         public Dictionary<string, float> UpkeepChassisMultis;
         // { "clan" : 1.25, "elite" : 1.5 }
@@ -34,6 +34,6 @@ namespace IttyBittyLivingSpace {
             Mod.Log.Info($"  MechParts - Factor:x{MechPartsFactor} MechPartsCostPerTon:{MechPartsCostPerTon}");
             Mod.Log.Info("=== MOD CONFIG END ===");
         }
-        BattleTech.MechComponentDef
+        
     }
 }

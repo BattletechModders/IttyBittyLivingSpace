@@ -24,11 +24,6 @@ namespace IttyBittyLivingSpace {
             double mechPartsTonnage = Helper.GetMechPartsTonnage(__instance);
             int mechPartsStorageCost = Helper.CalculateMechPartsCost(__instance, mechPartsTonnage);
 
-            // TODO: Extract default costs 
-            //foreach (MechDef value in ActiveMechs.Values) {
-            //    num += finances.MechCostPerQuarter;
-            //}
-
             __result = __result + activeMechCosts + gearStorageCosts + mechPartsStorageCost;
         }
     }
@@ -47,15 +42,19 @@ namespace IttyBittyLivingSpace {
 
             Mod.Log.Info($"SGCQSS:RD - entered. Parsing current keys.");
             List<KeyValuePair<string, int>> currentKeys = GetCurrentKeys(___SectionOneExpensesList, ___simState);
+
+            // Extract the active mechs from the list, then re-add the updated price
             List<KeyValuePair<string, int>> filteredKeys = Helper.FilterActiveMechs(currentKeys, ___simState);
+            List<KeyValuePair<string, int>> activeMechs = Helper.GetActiveMechLabels(___simState);
+            filteredKeys.AddRange(activeMechs);
 
             double gearInventorySize = Helper.GetGearInventorySize(___simState);
             int gearStorageCost = Helper.CalculateGearCost(___simState, gearInventorySize);
-            filteredKeys.Add(new KeyValuePair<string, int>($"Gear ({gearInventorySize} units)", gearStorageCost));
+            filteredKeys.Add(new KeyValuePair<string, int>($"WHSE: Gear ({gearInventorySize} units)", gearStorageCost));
 
             double mechPartsTonnage = Helper.GetMechPartsTonnage(___simState);
             int mechPartsStorageCost = Helper.CalculateMechPartsCost(___simState, mechPartsTonnage);
-            filteredKeys.Add(new KeyValuePair<string, int>($"Mech Parts ({mechPartsTonnage} tons)", mechPartsStorageCost));
+            filteredKeys.Add(new KeyValuePair<string, int>($"WHSE: Mech Parts ({mechPartsTonnage} tons)", mechPartsStorageCost));
 
             filteredKeys.Sort(new ExpensesSorter());
 
@@ -80,9 +79,16 @@ namespace IttyBittyLivingSpace {
             Mod.Log.Debug($"SGCQSS:RD raw costs:{rawSectionOneCosts} costsS:{sectionOneCostsS} sectionOneCosts:{sectionOneCosts}");
 
             int newCosts = sectionOneCosts + gearStorageCost + mechPartsStorageCost;
-            Traverse setFieldT = Traverse.Create(__instance).Method("SetField", new object[] { typeof(TextMeshProUGUI), typeof(string) });
-            setFieldT.GetValue(new object[] { ___SectionOneExpensesField, SimGameState.GetCBillString(newCosts) });
-            Mod.Log.Debug($"SGCQSS:RD - updated ");
+            string newCostsS = SimGameState.GetCBillString(newCosts);
+            Mod.Log.Debug($"SGCQSS:RD - == COSTS == sectionOne:{sectionOneCosts} gear:{gearStorageCost} + parts:{mechPartsStorageCost} = {newCosts}");
+
+            try {
+                Traverse setFieldT = Traverse.Create(__instance).Method("SetField", new object[] { typeof(TextMeshProUGUI), typeof(string) });
+                setFieldT.GetValue(new object[] { ___SectionOneExpensesField, SimGameState.GetCBillString(newCosts) });
+                Mod.Log.Debug($"SGCQSS:RD - updated ");
+            } catch (Exception e) {
+                Mod.Log.Info($"SGCQSS:RD - failed to update summary costs section due to: {e.Message}");
+            }
         }
 
         public static List<KeyValuePair<string, int>> GetCurrentKeys(Transform container, SimGameState sgs) {

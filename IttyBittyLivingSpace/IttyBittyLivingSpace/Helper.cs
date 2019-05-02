@@ -14,6 +14,7 @@ namespace IttyBittyLivingSpace {
     [CustomComponent("Upkeep")]
     public class Upkeep : SimpleCustomComponent {
         public float CostMulti;
+        public float StorageSize;
     }
 
     public class ExpensesSorter : IComparer<KeyValuePair<string, int>> {
@@ -31,34 +32,49 @@ namespace IttyBittyLivingSpace {
         public static int CalculateActiveMechCosts(SimGameState sgs) {
             Mod.Log.Info($" === Calculating Active Mech Costs === ");
 
-            double totalCosts = 0;
+            int totalCosts = 0;
             foreach (KeyValuePair<int, MechDef> entry in sgs.ActiveMechs) {
-                MechDef mechDef = entry.Value;
-                Mod.Log.Info($"  Active Mech found with item: {mechDef.Description.Id}");
-
-                double baseCost = mechDef.Description.Cost * Mod.Config.UpkeepChassisMulti;
-                Mod.Log.Info($"  rawCost:{mechDef.Description.Cost} x {Mod.Config.UpkeepChassisMulti} = {baseCost}");
-
-                double modifiedCost = 0;
-                foreach (string chassisTag in mechDef.Chassis.ChassisTags) {
-                    if (Mod.Config.UpkeepChassisMultis.ContainsKey(chassisTag)) {
-                        float multi = Mod.Config.UpkeepChassisMultis[chassisTag];
-                        modifiedCost += mechDef.Description.Cost * multi;
-                        Mod.Log.Debug($"  tag:{chassisTag} multi:{multi} x cost:{mechDef.Description.Cost} = {mechDef.Description.Cost * multi}");
-                    }
-                }
-
-                if (modifiedCost == 0) {
-                    modifiedCost = baseCost;
-                    Mod.Log.Debug($"  No modifying tags, defaulting to baseCost.");
-                }
-
-                totalCosts += modifiedCost;
+                totalCosts += CalculateMechCost(entry.Value);
             }
 
-            int finalCosts = (int)Math.Ceiling(totalCosts);
+            return totalCosts;
+        }
 
-            return finalCosts;
+        public static List<KeyValuePair<string, int>> GetActiveMechLabels(SimGameState sgs) {
+            Mod.Log.Info($" === Calculating Active Mech Labels === ");
+
+            List<KeyValuePair<string, int>> labels = new List<KeyValuePair<string, int>>();
+            foreach (KeyValuePair<int, MechDef> entry in sgs.ActiveMechs) {
+                MechDef mechDef = entry.Value;
+                int mechCost = CalculateMechCost(mechDef);
+                Mod.Log.Info($"  Adding mech:{mechDef.Name} with cost:{mechCost}");
+                labels.Add(new KeyValuePair<string, int>("MECH: " + mechDef.Name, mechCost));
+            }
+
+            return labels;
+        }
+
+        private static int CalculateMechCost(MechDef mechDef) {
+            Mod.Log.Info($"  Active Mech found with item: {mechDef.Description.Id}");
+
+            double baseCost = mechDef.Description.Cost * Mod.Config.UpkeepChassisMulti;
+            Mod.Log.Info($"  rawCost:{mechDef.Description.Cost} x {Mod.Config.UpkeepChassisMulti} = {baseCost}");
+
+            double modifiedCost = 0;
+            foreach (string chassisTag in mechDef.Chassis.ChassisTags) {
+                if (Mod.Config.UpkeepChassisMultis.ContainsKey(chassisTag)) {
+                    float multi = Mod.Config.UpkeepChassisMultis[chassisTag];
+                    modifiedCost += mechDef.Description.Cost * multi;
+                    Mod.Log.Debug($"  tag:{chassisTag} multi:{multi} x cost:{mechDef.Description.Cost} = {mechDef.Description.Cost * multi}");
+                }
+            }
+
+            if (modifiedCost == 0) {
+                modifiedCost = baseCost;
+                Mod.Log.Debug($"  No modifying tags, defaulting to baseCost.");
+            }
+
+            return (int)Math.Ceiling(modifiedCost);
         }
 
         public static float GetGearInventorySize(SimGameState sgs) {
@@ -109,7 +125,7 @@ namespace IttyBittyLivingSpace {
                     float fractionalTonnage = cDef.Tonnage * mechPartRatio;
                     Mod.Log.Debug($"  Mech parts ratio: {mechPartRatio} mechTonnage:{cDef.Tonnage} fractionalTonnage:{fractionalTonnage}");
 
-                    double roundedTonnage = Math.Ceiling(fractionalTonnage / 5);
+                    double roundedTonnage = Math.Ceiling(fractionalTonnage / 5); 
                     double normalizedTonnage = roundedTonnage * 5;
                     Mod.Log.Debug($"  RoundedTonnage:{roundedTonnage} normaliedTonnage:{normalizedTonnage}");
                     rawPartsTonnage = normalizedTonnage;
