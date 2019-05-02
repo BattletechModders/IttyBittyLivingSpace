@@ -16,16 +16,20 @@ namespace IttyBittyLivingSpace {
         public static void Postfix(SimGameState __instance, ref int __result, bool proRate) {
             Mod.Log.Info($"SGS:GE entered with {__result}");
 
-            Mod.Log.Info($" === active mechs");
-            foreach (KeyValuePair<int, MechDef> entry in __instance.ActiveMechs) {
-                Mod.Log.Info($"Active Mech found with item: {entry.Value.Description.Id}");
-            }
+            int activeMechCosts = Helper.CalculateActiveMechCosts(__instance);
 
-            Mod.Log.Info($" === readied mechs");
-            foreach (KeyValuePair<int, MechDef> entry in __instance.ReadyingMechs) {
-                Mod.Log.Info($"Readying Mech found with item: {entry.Value.Description.Id}");
-            }
-             
+            double gearInventorySize = Helper.GetGearInventorySize(__instance);
+            int gearStorageCosts = Helper.CalculateGearCost(__instance, gearInventorySize);
+
+            double mechPartsTonnage = Helper.GetMechPartsTonnage(__instance);
+            int mechPartsStorageCost = Helper.CalculateMechPartsCost(__instance, mechPartsTonnage);
+
+            // TODO: Extract default costs 
+            //foreach (MechDef value in ActiveMechs.Values) {
+            //    num += finances.MechCostPerQuarter;
+            //}
+
+            __result = __result + activeMechCosts + gearStorageCosts + mechPartsStorageCost;
         }
     }
 
@@ -43,23 +47,24 @@ namespace IttyBittyLivingSpace {
 
             Mod.Log.Info($"SGCQSS:RD - entered. Parsing current keys.");
             List<KeyValuePair<string, int>> currentKeys = GetCurrentKeys(___SectionOneExpensesList, ___simState);
+            List<KeyValuePair<string, int>> filteredKeys = Helper.FilterActiveMechs(currentKeys, ___simState);
 
             double gearInventorySize = Helper.GetGearInventorySize(___simState);
             int gearStorageCost = Helper.CalculateGearCost(___simState, gearInventorySize);
-            currentKeys.Add(new KeyValuePair<string, int>($"Gear ({gearInventorySize} units)", gearStorageCost));
+            filteredKeys.Add(new KeyValuePair<string, int>($"Gear ({gearInventorySize} units)", gearStorageCost));
 
             double mechPartsTonnage = Helper.GetMechPartsTonnage(___simState);
             int mechPartsStorageCost = Helper.CalculateMechPartsCost(___simState, mechPartsTonnage);
-            currentKeys.Add(new KeyValuePair<string, int>($"Mech Parts ({mechPartsTonnage} tons)", mechPartsStorageCost));
+            filteredKeys.Add(new KeyValuePair<string, int>($"Mech Parts ({mechPartsTonnage} tons)", mechPartsStorageCost));
 
-            currentKeys.Sort(new ExpensesSorter());
+            filteredKeys.Sort(new ExpensesSorter());
 
             Mod.Log.Info($"SGCQSS:RD - Clearing items");
             ClearListLineItems(___SectionOneExpensesList, ___simState);
 
             Mod.Log.Info($"SGCQSS:RD - Adding listLineItems");
             try {
-                foreach (KeyValuePair<string, int> kvp in currentKeys) {
+                foreach (KeyValuePair<string, int> kvp in filteredKeys) {
                     Mod.Log.Info($"SGCQSS:RD - Adding key:{kvp.Key} value:{kvp.Value}");
                     AddListLineItem(___SectionOneExpensesList, ___simState, kvp.Key, SimGameState.GetCBillString(kvp.Value));
                 }
@@ -67,6 +72,17 @@ namespace IttyBittyLivingSpace {
             } catch (Exception e) {
                 Mod.Log.Info($"SGCQSS:RD - failed to add lineItemParts due to: {e.Message}");
             }
+
+            // Update summary costs
+            string rawSectionOneCosts = ___SectionOneExpensesField.text;
+            string sectionOneCostsS = Regex.Replace(rawSectionOneCosts, @"[^\d]", "");
+            int sectionOneCosts = int.Parse(sectionOneCostsS);
+            Mod.Log.Debug($"SGCQSS:RD raw costs:{rawSectionOneCosts} costsS:{sectionOneCostsS} sectionOneCosts:{sectionOneCosts}");
+
+            int newCosts = sectionOneCosts + gearStorageCost + mechPartsStorageCost;
+            Traverse setFieldT = Traverse.Create(__instance).Method("SetField", new object[] { typeof(TextMeshProUGUI), typeof(string) });
+            setFieldT.GetValue(new object[] { ___SectionOneExpensesField, SimGameState.GetCBillString(newCosts) });
+            Mod.Log.Debug($"SGCQSS:RD - updated ");
         }
 
         public static List<KeyValuePair<string, int>> GetCurrentKeys(Transform container, SimGameState sgs) {

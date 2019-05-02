@@ -1,5 +1,7 @@
 ﻿
 
+using System.Collections.Generic;
+
 namespace IttyBittyLivingSpace {
 
     public class ModConfig {
@@ -13,7 +15,17 @@ namespace IttyBittyLivingSpace {
 
         public float MechPartsFactor = 1.0f;
         public int MechPartsCostPerTon = 10;
-        public float MechPartsExponent = 2.0f;
+        public float PartsExponent = 2.0f;
+
+        public Dictionary<string, float> PartsStorageMulti;
+        // { "clan" : 1.5, "elite" : 2.0 },
+
+        public float UpkeepGearMulti = 0.2f;
+
+        public float UpkeepChassisMulti = 0.2f;
+
+        public Dictionary<string, float> UpkeepChassisMultis;
+        // { "clan" : 1.25, "elite" : 1.5 }
 
         public void LogConfig() {
             Mod.Log.Info("=== MOD CONFIG BEGIN ===");
@@ -22,5 +34,6 @@ namespace IttyBittyLivingSpace {
             Mod.Log.Info($"  MechParts - Factor:x{MechPartsFactor} MechPartsCostPerTon:{MechPartsCostPerTon}");
             Mod.Log.Info("=== MOD CONFIG END ===");
         }
+        BattleTech.MechComponentDef
     }
 }
