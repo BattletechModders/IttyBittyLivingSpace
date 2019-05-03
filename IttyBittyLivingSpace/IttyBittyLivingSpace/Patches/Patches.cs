@@ -1,5 +1,6 @@
 ﻿using BattleTech;
 using BattleTech.UI;
+using BattleTech.UI.Tooltips;
 using Harmony;
 using System;
 using System.Collections;
@@ -166,6 +167,58 @@ namespace IttyBittyLivingSpace {
         }
     }
 
+    [HarmonyPatch(typeof(TooltipPrefab_Chassis), "SetData")]
+    [HarmonyAfter(new string[] { "us.frostraptor.IRUITweaks" })]
+    public static class TooltipPrefab_Chassis_SetData {
+        public static void Postfix(TooltipPrefab_Chassis __instance, object data, TextMeshProUGUI ___descriptionText) {
+            Mod.Log.Debug($"TP_C:SD - Init");
+            if (data != null && ___descriptionText != null) {
+                ChassisDef chassisDef = (ChassisDef)data;
 
+                double storageTons = Helper.CalculateChassisTonnage(chassisDef);
+                string newDetails = chassisDef.Description.Details + $"\n\n<color=#FF0000>Storage Tonnage: {storageTons}</color>";
+                Mod.Log.Debug($"  Setting details: {newDetails}u");
+                ___descriptionText.SetText(newDetails, new object[0]);
+            } else {
+                Mod.Log.Debug($"TP_C:SD - Skipping");
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(TooltipPrefab_Equipment), "SetData")]
+    [HarmonyAfter(new string[] { "us.frostraptor.IRUITweaks" })]
+    public static class TooltipPrefab_Equipment_SetData {
+        public static void Postfix(TooltipPrefab_Equipment __instance, object data, TextMeshProUGUI ___detailText) {
+            Mod.Log.Debug($"TP_E:SD - Init");
+            if (data != null && ___detailText != null) {
+                MechComponentDef mcDef = (MechComponentDef)data;
+
+                float storageSize = Helper.CalculateGearStorageSize(mcDef);
+                string newDetails = mcDef.Description.Details + $"\n\n<color=#FF0000>Storage Size: {storageSize}</color>";
+                Mod.Log.Debug($"  Setting details: {newDetails}u");
+                ___detailText.SetText(newDetails, new object[0]);
+            } else {
+                Mod.Log.Debug($"TP_E:SD - Skipping");
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(TooltipPrefab_Weapon), "SetData")]
+    [HarmonyAfter(new string[] { "us.frostraptor.IRUITweaks" })]
+    public static class TooltipPrefab_Weapon_SetData {
+        public static void Postfix(TooltipPrefab_Weapon __instance, object data, TextMeshProUGUI ___body) {
+            Mod.Log.Debug($"TP_W:SD - Init - data:{data} body:{___body}");
+            if (data != null && ___body != null) {
+                WeaponDef weaponDef = (WeaponDef)data;
+
+                float storageSize = Helper.CalculateGearStorageSize(weaponDef);
+                string newDetails = weaponDef.Description.Details + $"\n\n<color=#FF0000>Storage Size: {storageSize}</color>";
+                Mod.Log.Debug($"  Setting details: {newDetails}u");
+                ___body.SetText(newDetails, new object[0]);
+            } else {
+                Mod.Log.Debug($"TP_W:SD - Skipping");
+            }
+        }
+    }
 }
 

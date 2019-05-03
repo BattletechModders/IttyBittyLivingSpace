@@ -96,20 +96,27 @@ namespace IttyBittyLivingSpace {
             float totalUnits = 0.0f;
             foreach (MechComponentRef mcRef in sgs.GetAllInventoryItemDefs()) {
                 int itemCount = sgs.GetItemCount(mcRef.Def.Description, mcRef.Def.GetType(), sgs.GetItemCountDamageType(mcRef));
-                string itemId = mcRef.Def.Description.Id;
-                float itemSize = mcRef.Def.InventorySize;
-                Mod.Log.Debug($"  Inventory item:({mcRef.Def.Description.Id}) qty:{itemCount} size:{mcRef.Def.InventorySize}");
-
-                if (mcRef.Is<Storage>(out Storage storage)) {
-                    Mod.Log.Debug($"  Overriding size:{storage.Size} instead of:{mcRef.Def.InventorySize}");
-                    itemSize = storage.Size;
-                } 
-
+                float itemSize = CalculateGearStorageSize(mcRef.Def);
+                Mod.Log.Debug($"  Inventory item:({mcRef.Def.Description.Id}) size:{itemSize} qty:{itemCount}");
                 totalUnits += itemSize;
             }
 
             Mod.Log.Debug($"  Total storage units: {totalUnits}u");
             return totalUnits;
+        }
+
+        public static float CalculateGearStorageSize(MechComponentDef mcDef) {
+            
+            string itemId = mcDef.Description.Id;
+            float itemSize = mcDef.InventorySize;
+            Mod.Log.Debug($"  Inventory item:({mcDef.Description.Id}) size:{mcDef.InventorySize}");
+
+            if (mcDef.Is<Storage>(out Storage storage)) {
+                Mod.Log.Debug($"  Overriding size:{storage.Size} instead of:{mcDef.InventorySize}");
+                itemSize = storage.Size;
+            }
+
+            return itemSize;
         }
 
         public static int CalculateGearCost(SimGameState sgs, double totalUnits) {
@@ -128,44 +135,61 @@ namespace IttyBittyLivingSpace {
         public static double GetMechPartsTonnage(SimGameState sgs) {
             double allPartsTonnage = 0;
             foreach (ChassisDef cDef in sgs.GetAllInventoryMechDefs(true)) {
-                int itemCount = cDef.MechPartCount;
-                Mod.Log.Debug($"ChassisDef: {cDef.Description.Id} has count: x{cDef.MechPartCount} with max: x{cDef.MechPartMax}");
 
-                double rawPartsTonnage = 0.0;
-                if (cDef.MechPartCount == 0) {
-                    Mod.Log.Debug($"  Complete chassis, adding tonnage:{cDef.Tonnage}");
-                    rawPartsTonnage = cDef.Tonnage;
-                } else {
-                    float mechPartRatio = (float)cDef.MechPartCount / (float)cDef.MechPartMax;
-                    float fractionalTonnage = cDef.Tonnage * mechPartRatio;
-                    Mod.Log.Debug($"  Mech parts ratio: {mechPartRatio} mechTonnage:{cDef.Tonnage} fractionalTonnage:{fractionalTonnage}");
+                double chassisTonnage = CalculateChassisTonnage(cDef);
+                allPartsTonnage += chassisTonnage;
+            }
 
-                    double roundedTonnage = Math.Ceiling(fractionalTonnage / 5); 
-                    double normalizedTonnage = roundedTonnage * 5;
-                    Mod.Log.Debug($"  RoundedTonnage:{roundedTonnage} normaliedTonnage:{normalizedTonnage}");
-                    rawPartsTonnage = normalizedTonnage;
-                }
+            Mod.Log.Debug($"Total tonnage from mech parts:{allPartsTonnage}");
+            return allPartsTonnage;
+        }
 
-                double chassisTonnage = 0;
-                // Check for tags that influence the tonnage
+        public static double CalculateChassisTonnage(ChassisDef cDef) {
+            int itemCount = cDef.MechPartCount;
+            Mod.Log.Debug($"ChassisDef: {cDef.Description.Id} has count: x{cDef.MechPartCount} with max: x{cDef.MechPartMax}");
+
+            double rawPartsTonnage = 0.0;
+            if (cDef.MechPartCount == 0) {
+                Mod.Log.Debug($"  Complete chassis, adding tonnage:{cDef.Tonnage}");
+                rawPartsTonnage = cDef.Tonnage;
+            } else {
+                float mechPartRatio = (float)cDef.MechPartCount / (float)cDef.MechPartMax;
+                float fractionalTonnage = cDef.Tonnage * mechPartRatio;
+                Mod.Log.Debug($"  Mech parts ratio: {mechPartRatio} mechTonnage:{cDef.Tonnage} fractionalTonnage:{fractionalTonnage}");
+
+                double roundedTonnage = Math.Ceiling(fractionalTonnage / 5);
+                double normalizedTonnage = roundedTonnage * 5;
+                Mod.Log.Debug($"  RoundedTonnage:{roundedTonnage} normaliedTonnage:{normalizedTonnage}");
+                rawPartsTonnage = normalizedTonnage;
+            }
+
+            double chassisTonnage = 0;
+            // Check for tags that influence the tonnage
+            if (cDef.ChassisTags != null) {
                 foreach (string chassisTag in cDef.ChassisTags) {
+                    if (chassisTag == null) {
+                        Mod.Log.Debug($"  tag:({chassisTag}) skipping");
+                        continue;
+                    } else {
+                        Mod.Log.Debug($"  processing tag:({chassisTag}) ");
+                    }
+
                     if (Mod.Config.PartsStorageMulti.ContainsKey(chassisTag)) {
                         float multi = Mod.Config.PartsStorageMulti[chassisTag];
                         chassisTonnage += rawPartsTonnage * multi;
                         Mod.Log.Debug($"  tag:{chassisTag} multi:{multi} yields:{rawPartsTonnage * multi}");
                     }
                 }
-
-                if (chassisTonnage == 0) {
-                    chassisTonnage = rawPartsTonnage;
-                    Mod.Log.Debug($"  No chassis multipliers found, defaulting to rawParts tonnage.");
-                }
-
-                allPartsTonnage += chassisTonnage;
+            } else {
+                Mod.Log.Debug($"  chassis has null chassisTags... skipping.");
             }
 
-            Mod.Log.Debug($"Total tonnage from mech parts:{allPartsTonnage}");
-            return allPartsTonnage;
+            if (chassisTonnage == 0) {
+                chassisTonnage = rawPartsTonnage;
+                Mod.Log.Debug($"  No chassis multipliers found, defaulting to rawParts tonnage.");
+            }
+
+            return chassisTonnage;
         }
 
         public static int CalculateMechPartsCost(SimGameState sgs, double totalTonnage) {
