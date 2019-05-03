@@ -16,6 +16,14 @@ namespace IttyBittyLivingSpace {
         public static void Postfix(SimGameState __instance, ref int __result, bool proRate) {
             Mod.Log.Info($"SGS:GE entered with {__result}");
 
+            // Subtract the base cost of mechs
+            float expenditureCostModifier = __instance.GetExpenditureCostModifier(__instance.ExpenditureLevel);
+            int defaultMechCosts = 0;
+            foreach (MechDef mechDef in __instance.ActiveMechs.Values) {
+                defaultMechCosts += Mathf.RoundToInt(expenditureCostModifier * (float)__instance.Constants.Finances.MechCostPerQuarter);
+            }
+
+            // Add the new costs
             int activeMechCosts = Helper.CalculateActiveMechCosts(__instance);
 
             double gearInventorySize = Helper.GetGearInventorySize(__instance);
@@ -24,7 +32,9 @@ namespace IttyBittyLivingSpace {
             double mechPartsTonnage = Helper.GetMechPartsTonnage(__instance);
             int mechPartsStorageCost = Helper.CalculateMechPartsCost(__instance, mechPartsTonnage);
 
-            __result = __result + activeMechCosts + gearStorageCosts + mechPartsStorageCost;
+            int total = __result - defaultMechCosts + activeMechCosts + gearStorageCosts + mechPartsStorageCost;
+            Mod.Log.Info($"SGS:GE - total:{total} ==> result:{__result} - defaultMechCosts:{defaultMechCosts} = {__result - defaultMechCosts} + activeMechs:{activeMechCosts} + gearStorage:{gearStorageCosts} + partsStorage:{mechPartsStorageCost}");
+            __result = total;
         }
     }
 
@@ -48,6 +58,9 @@ namespace IttyBittyLivingSpace {
             List<KeyValuePair<string, int>> activeMechs = Helper.GetActiveMechLabels(___simState);
             filteredKeys.AddRange(activeMechs);
 
+            // Add the new costs
+            int activeMechCosts = Helper.CalculateActiveMechCosts(___simState);
+
             double gearInventorySize = Helper.GetGearInventorySize(___simState);
             int gearStorageCost = Helper.CalculateGearCost(___simState, gearInventorySize);
             filteredKeys.Add(new KeyValuePair<string, int>($"WHSE: Gear ({gearInventorySize} units)", gearStorageCost));
@@ -62,9 +75,11 @@ namespace IttyBittyLivingSpace {
             ClearListLineItems(___SectionOneExpensesList, ___simState);
 
             Mod.Log.Info($"SGCQSS:RD - Adding listLineItems");
+            int totalCost = 0;
             try {
                 foreach (KeyValuePair<string, int> kvp in filteredKeys) {
                     Mod.Log.Info($"SGCQSS:RD - Adding key:{kvp.Key} value:{kvp.Value}");
+                    totalCost += kvp.Value;
                     AddListLineItem(___SectionOneExpensesList, ___simState, kvp.Key, SimGameState.GetCBillString(kvp.Value));
                 }
 
@@ -73,18 +88,12 @@ namespace IttyBittyLivingSpace {
             }
 
             // Update summary costs
-            string rawSectionOneCosts = ___SectionOneExpensesField.text;
-            string sectionOneCostsS = Regex.Replace(rawSectionOneCosts, @"[^\d]", "");
-            int sectionOneCosts = int.Parse(sectionOneCostsS);
-            Mod.Log.Debug($"SGCQSS:RD raw costs:{rawSectionOneCosts} costsS:{sectionOneCostsS} sectionOneCosts:{sectionOneCosts}");
-
-            int newCosts = sectionOneCosts + gearStorageCost + mechPartsStorageCost;
+            int newCosts = totalCost;
             string newCostsS = SimGameState.GetCBillString(newCosts);
-            Mod.Log.Debug($"SGCQSS:RD - == COSTS == sectionOne:{sectionOneCosts} gear:{gearStorageCost} + parts:{mechPartsStorageCost} = {newCosts}");
+            Mod.Log.Debug($"SGCQSS:RD - total:{newCosts} = activeMechs:{activeMechCosts} + gearStorage:{gearStorageCost} + partsStorage:{mechPartsStorageCost}");
 
             try {
-                Traverse setFieldT = Traverse.Create(__instance).Method("SetField", new object[] { typeof(TextMeshProUGUI), typeof(string) });
-                setFieldT.GetValue(new object[] { ___SectionOneExpensesField, SimGameState.GetCBillString(newCosts) });
+                ___SectionOneExpensesField.SetText(SimGameState.GetCBillString(newCosts));
                 Mod.Log.Debug($"SGCQSS:RD - updated ");
             } catch (Exception e) {
                 Mod.Log.Info($"SGCQSS:RD - failed to update summary costs section due to: {e.Message}");

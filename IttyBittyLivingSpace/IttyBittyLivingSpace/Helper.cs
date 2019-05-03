@@ -55,18 +55,33 @@ namespace IttyBittyLivingSpace {
         }
 
         private static int CalculateMechCost(MechDef mechDef) {
+            if (mechDef == null || mechDef.Description == null) {
+                Mod.Log.Info($"  MechDef or mechDef description is null, skipping.");
+            }
+
             Mod.Log.Info($"  Active Mech found with item: {mechDef.Description.Id}");
 
             double baseCost = mechDef.Description.Cost * Mod.Config.UpkeepChassisMulti;
             Mod.Log.Info($"  rawCost:{mechDef.Description.Cost} x {Mod.Config.UpkeepChassisMulti} = {baseCost}");
 
             double modifiedCost = 0;
-            foreach (string chassisTag in mechDef.Chassis.ChassisTags) {
-                if (Mod.Config.UpkeepChassisMultis.ContainsKey(chassisTag)) {
-                    float multi = Mod.Config.UpkeepChassisMultis[chassisTag];
-                    modifiedCost += mechDef.Description.Cost * multi;
-                    Mod.Log.Debug($"  tag:{chassisTag} multi:{multi} x cost:{mechDef.Description.Cost} = {mechDef.Description.Cost * multi}");
+            if (mechDef.Chassis != null && mechDef.Chassis.ChassisTags != null) {
+                foreach (string chassisTag in mechDef.Chassis.ChassisTags) {
+                    if (chassisTag == null) {
+                        Mod.Log.Debug($"  tag:({chassisTag}) skipping");
+                        continue;
+                    } else {
+                        Mod.Log.Debug($"  processing tag:({chassisTag}) ");
+                    }
+
+                    if (Mod.Config.UpkeepChassisMultis.ContainsKey(chassisTag)) {
+                        float multi = Mod.Config.UpkeepChassisMultis[chassisTag];
+                        modifiedCost += mechDef.Description.Cost * multi;
+                        Mod.Log.Debug($"  tag:{chassisTag} multi:{multi} x cost:{mechDef.Description.Cost} = {mechDef.Description.Cost * multi}");
+                    }
                 }
+            } else {
+                Mod.Log.Debug($"  chassis has null chassisTags... skipping.");
             }
 
             if (modifiedCost == 0) {
@@ -156,11 +171,11 @@ namespace IttyBittyLivingSpace {
         public static int CalculateMechPartsCost(SimGameState sgs, double totalTonnage) {
             Mod.Log.Info($" === Calculating Mech Parts === ");
 
-            double factoredTonnage = Math.Ceiling(totalTonnage * Mod.Config.MechPartsFactor);
-            Mod.Log.Info($"  totalUnits:{totalTonnage} x factor:{Mod.Config.MechPartsFactor} = {factoredTonnage}");
+            double factoredTonnage = Math.Ceiling(totalTonnage * Mod.Config.PartsFactor);
+            Mod.Log.Info($"  totalUnits:{totalTonnage} x factor:{Mod.Config.PartsFactor} = {factoredTonnage}");
 
             double scaledTonnage = Math.Pow(factoredTonnage, Mod.Config.PartsExponent);
-            int totalCost = (int)(Mod.Config.MechPartsCostPerTon * scaledTonnage);
+            int totalCost = (int)(Mod.Config.PartsCostPerTon * scaledTonnage);
             Mod.Log.Info($"  scaledTonnage:{scaledTonnage} x costPerUnit:{Mod.Config.GearCostPerUnit} = {totalCost}");
 
             return (int)Math.Ceiling((double)totalCost);
