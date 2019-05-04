@@ -1,7 +1,7 @@
 {
     "Name": "IttyBittyLivingSpace",
     "Enabled": true,
-    "Version": "0.2.0",
+    "Version": "0.3.3",
     "Description": "Makes the tight storage aboard dropships more expensive.",
     "Author": "IceRaptor",
     "Website": "https://github.com/IceRaptor/IttyBittyLivingSpace",
@@ -9,16 +9,19 @@
     "DLL": "IttyBittyLivingSpace.dll",
     "DependsOn" : [ "CustomComponents" ],
     "Settings": {
-        "Debug" : true,
+        "Debug" : false,
+
         "GearFactor" : 1.0,
         "GearCostPerUnit" : 100,
         "GearExponent" : 2.0,
+
         "PartsFactor" : 1.0,
-        "PartsCostPerTon" : 20,
-        "PartsExponent" : 2.0,
-        "PartsStorageMulti" : { },
-        "UpkeepGearMulti" : 0.2,
-        "UpkeepChassisMulti" : 0.02,
-        "UpkeepChassisMultis" : { }
+        "PartsCostPerTon" : 5,
+        "PartsExponent" : 1.75,
+        "PartsStorageTagMultis" : { },
+
+        "UpkeepGearMulti" : 0.02,
+        "UpkeepChassisMulti" : 0.01,
+        "UpkeepChassisTagMultis" : { }
     }
 }

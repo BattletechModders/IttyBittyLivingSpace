@@ -36,21 +36,6 @@ namespace IttyBittyLivingSpace {
             foreach (KeyValuePair<int, MechDef> entry in sgs.ActiveMechs) {
                 totalCost += CalculateMechCost(entry.Value);
             }
-            Mod.Log.Info($" Raw mech costs for active mechs:{totalCost}");
-
-            SimGameState simGameState = UnityGameInstance.BattleTechGame.Simulation;
-            Statistic upkeepStat = simGameState.CompanyStats.GetStatistic(ModConfig.SC_Upkeep);
-            if (upkeepStat != null) {
-                try {
-                    float statMulti = upkeepStat.Value<float>();
-                    Mod.Log.Debug($" Statistic {ModConfig.SC_Upkeep} has multi:{statMulti}");
-                    float modifiedCosts = totalCost * statMulti;
-                    Mod.Log.Info($" Statistic modified cost:{modifiedCosts} = statMulti:{statMulti} x totalCosts:{totalCost}");
-                    totalCost = (int)Math.Ceiling(modifiedCosts);
-                } catch (Exception e) {
-                    Mod.Log.Info($"Failed to read {ModConfig.SC_Upkeep} due to exception:{e.Message}");
-                }
-            }
 
             Mod.Log.Info($" Total cost for active mechs:{totalCost}");
             return totalCost;
@@ -112,6 +97,20 @@ namespace IttyBittyLivingSpace {
 
             int upkeepCost = chassisCost + componentCost;
             Mod.Log.Info($" upkeepCost:{upkeepCost} = chassisCost:{chassisCost} + componentCost:{componentCost}");
+
+            SimGameState simGameState = UnityGameInstance.BattleTechGame.Simulation;
+            Statistic upkeepStat = simGameState.CompanyStats.GetStatistic(ModConfig.SC_Upkeep);
+            if (upkeepStat != null) {
+                try {
+                    float statMulti = upkeepStat.Value<float>();
+                    Mod.Log.Debug($" Statistic {ModConfig.SC_Upkeep} has multi:{statMulti}");
+                    float modifiedCosts = upkeepCost * statMulti;
+                    Mod.Log.Info($" Statistic modified cost:{modifiedCosts} = statMulti:{statMulti} x upkeepCost:{upkeepCost}");
+                    upkeepCost = (int)Math.Ceiling(modifiedCosts);
+                } catch (Exception e) {
+                    Mod.Log.Info($"Failed to read {ModConfig.SC_Upkeep} due to exception:{e.Message}");
+                }
+            }
 
             return upkeepCost;
         }
@@ -234,11 +233,13 @@ namespace IttyBittyLivingSpace {
             Mod.Log.Debug($" === Calculating Mech Parts === ");
 
             double factoredTonnage = Math.Ceiling(totalTonnage * Mod.Config.PartsFactor);
-            Mod.Log.Info($"  totalUnits:{totalTonnage} x factor:{Mod.Config.PartsFactor} = {factoredTonnage}");
+            Mod.Log.Debug($"  factoredTonnage:{factoredTonnage} = totalTonnage:{totalTonnage} x factor:{Mod.Config.PartsFactor}");
 
             double scaledTonnage = Math.Pow(factoredTonnage, Mod.Config.PartsExponent);
+            Mod.Log.Debug($"  scaledTonnage:{scaledTonnage} = factoredTonnage:{factoredTonnage} ^ partsExponent:{Mod.Config.PartsExponent}");
+
             int totalCost = (int)(Mod.Config.PartsCostPerTon * scaledTonnage);
-            Mod.Log.Info($"  scaledTonnage:{scaledTonnage} x costPerUnit:{Mod.Config.GearCostPerUnit} = {totalCost}");
+            Mod.Log.Info($"  totalCost:{totalCost} = scaledTonnage:{scaledTonnage} x costPerTon:{Mod.Config.PartsCostPerTon}");
 
             SimGameState simGameState = UnityGameInstance.BattleTechGame.Simulation;
             Statistic upkeepStat = simGameState.CompanyStats.GetStatistic(ModConfig.SC_Cargo);
