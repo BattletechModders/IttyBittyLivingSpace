@@ -6,13 +6,8 @@ using System.Collections.Generic;
 
 namespace IttyBittyLivingSpace {
 
-    [CustomComponent("Storage")]
-    public class Storage : SimpleCustomComponent {
-        public float Size;
-    }
-
-    [CustomComponent("Upkeep")]
-    public class Upkeep : SimpleCustomComponent {
+    [CustomComponent("IBLS")]
+    public class IBLS : SimpleCustomComponent {
         public float CostMulti;
         public float StorageSize;
     }
@@ -90,7 +85,15 @@ namespace IttyBittyLivingSpace {
             foreach (MechComponentRef mcRef in mechDef.Inventory) {
                 string compName = mcRef.Def.Description.Name;
                 int compRawCost = mcRef.Def.Description.Cost;
-                int modifiedCost = (int)Math.Ceiling(compRawCost * Mod.Config.UpkeepGearMulti);
+
+                int modifiedCost = 0;
+                if (mcRef.Is<IBLS>(out IBLS ibls)) {
+                    Mod.Log.Debug($"  Override multiplier:{ibls.CostMulti} instead of:{Mod.Config.UpkeepGearMulti}");
+                    modifiedCost = (int)Math.Ceiling(compRawCost * ibls.CostMulti);
+                } else {
+                    modifiedCost = (int)Math.Ceiling(compRawCost * Mod.Config.UpkeepGearMulti);
+                }
+
                 Mod.Log.Debug($"  component:{compName} rawCost:{compRawCost} modifiedCost:{modifiedCost}");
                 componentCost += modifiedCost;
             }
@@ -134,9 +137,9 @@ namespace IttyBittyLivingSpace {
             float itemSize = mcDef.InventorySize;
             Mod.Log.Debug($"  Inventory item:({mcDef.Description.Id}) size:{mcDef.InventorySize}");
 
-            if (mcDef.Is<Storage>(out Storage storage)) {
-                Mod.Log.Debug($"  Overriding size:{storage.Size} instead of:{mcDef.InventorySize}");
-                itemSize = storage.Size;
+            if (mcDef.Is<IBLS>(out IBLS ibls)) {
+                Mod.Log.Debug($"  Overriding size:{ibls.StorageSize} instead of:{mcDef.InventorySize}");
+                itemSize = ibls.StorageSize;
             }
 
             return itemSize;

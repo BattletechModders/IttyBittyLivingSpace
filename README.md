@@ -3,25 +3,35 @@ This mod for the [HBS BattleTech](http://battletechgame.com/) game makes storage
 
 ## Active Mech Upkeep
 
-Mechs currently in a Mechbay during a financial report triggers add to the monthly upkeep as well. Each mech's `ChassisDef.DescriptionDef.Cost` count as its base cost, which is multiplied an upkeep factor. For an upkeep multiplier of 0.02 and a chassis cost of 600,000 c-bills, the monthly upkeep would be 12,000 c-bills.
+Mechs currently in a Mechbay during a financial report triggers add to the monthly upkeep as well. Each mech's `ChassisDef.DescriptionDef.Cost` count as its base cost, which is multiplied an upkeep factor. This factor is defined as **UpkeepChassisMulti**, which defaults to 0.01. For a chassis cost of 600,000 c-bills and the default multi, the monthly upkeep would be 6,000 c-bills.
 
-Like mech parts, this value can be modified by tags on the chassisDef and mechDef. Any tag defined in **UpkeepCostMultis** will multiply the chassis cost and add the result to the total upkeep cost for that mech. If the same mech above has the 'clan' multiplier with value 0.03, and 'elite' multiplier with value 0.04, the total monthly cost would be (600,000 * 0.03 = 18,000) + (600,000 * 0.04 = 24,000) = 42,000 c-bills.
+This value can be modified by tags defined on the `ChassisDef`. **UpkeepChassisTagMultis** is a dictionary of chassis tags and multiplier values. The values of any chassis tags that match will be added to a 1.0 modifier. The final modifier will multiply the chassis upkeep defined above. Here's an example of the dictionary:
 
-In addition, every component currently installed on the mech adds its `MechComponentDef.DescriptionDef.Cost` to the upkeep total. This value is multiplied by a different upkeep factor, defined as **UpkeepDefaultGearMulti**. For a component with a cost of 150,000 and a default multi of 0.2, the additional cost would be (150,000 * 0.02 = 300).
+```
+"UpkeepChassisTagMultis" : {
+    "clan" : 0.015,
+    "elite" : 0.005
+}
+```
 
-Another [Custom Component](https://github.com/BattletechModders/CustomComponents/) attribute named **Upkeep.CostMulti** overrides the default multiplier. An example attribute that would set the cost multiplier to 0.5 (reflecting prototype equipment) would be:
+If the chassis above had both the `clan` and `elite` tags, it's final cost would be `6,000 c-bills * (1.0 + 0.015 + 0.005) = 6,000 * 1.02 = 6,120`.
+
+In addition, every component currently installed on the mech adds its `MechComponentDef.DescriptionDef.Cost` to the upkeep total. This value is multiplied by a different upkeep factor, defined as **UpkeepGearMulti**. For a component with a cost of 150,000 and the default multiplier value of `0.02`, the component would add an additional cost additional cost would be `150,000 c-bills * 0.02 = 3000`.
+
+Another [Custom Component](https://github.com/BattletechModders/CustomComponents/) attribute named **IBLS** overrides the default multiplier. An example attribute that would set the component cost multiplier to 0.05 would be:
 
 ```
 "Custom" : {
-    "Upkeep" : {
-        "CostMulti" : 0.5
+    "IBLS" : {
+        "CostMulti" : 0.05,
+        "StorageSize" : 0.5
     }   
 }
 ```
 
-### Upkeep Maintenance Modifier
+### Upkeep Company Modifier
 
-MechbayMaintModifier - impacts cost of active mechs
+All upkeep costs are multiplied by a statistic named `IBLS_MechbayUpkeepModifier`. This statistic is read from `SimGameState.CompanyStats`, and directly multiplies the total upkeep. For a final upkeep of 100,000 c-bills, if `IBLS_MechbayUpkeepModifier` was 1.3 the actual upkeep would be calculated as `100,000 * 1.3 = 130,000`. 
 
 ## Cargo Storage
 
