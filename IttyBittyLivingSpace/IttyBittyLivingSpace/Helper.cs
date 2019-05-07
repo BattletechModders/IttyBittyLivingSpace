@@ -203,8 +203,8 @@ namespace IttyBittyLivingSpace {
                 rawPartsTonnage = normalizedTonnage;
             }
 
-            double chassisTonnage = 0;
             // Check for tags that influence the tonnage
+            double tagsMultiplier = 1.0;
             if (cDef.ChassisTags != null) {
                 foreach (string chassisTag in cDef.ChassisTags) {
                     if (chassisTag == null) {
@@ -215,21 +215,19 @@ namespace IttyBittyLivingSpace {
                     }
 
                     if (Mod.Config.PartsStorageTagMultis.ContainsKey(chassisTag)) {
-                        float multi = Mod.Config.PartsStorageTagMultis[chassisTag];
-                        chassisTonnage += rawPartsTonnage * multi;
-                        Mod.Log.Debug($"  tag:{chassisTag} multi:{multi} yields:{rawPartsTonnage * multi}");
+                        tagsMultiplier += Mod.Config.PartsStorageTagMultis[chassisTag];
+                        Mod.Log.Debug($"  tag:{chassisTag} adding multi:{Mod.Config.PartsStorageTagMultis[chassisTag]}");
                     }
                 }
             } else {
-                Mod.Log.Debug($"  chassis has null chassisTags... skipping.");
+                Mod.Log.Debug($"  chassis has no chassisTags");
             }
 
-            if (chassisTonnage == 0) {
-                chassisTonnage = rawPartsTonnage;
-                Mod.Log.Debug($"  No chassis multipliers found, defaulting to rawParts tonnage.");
-            }
+            int modifiedTonnage = (int)Math.Ceiling(rawPartsTonnage * tagsMultiplier);
+            Mod.Log.Info($" modifiedTonnage:{modifiedTonnage} = rawPartsTonnage:{rawPartsTonnage} x {tagsMultiplier}");
 
-            return Math.Ceiling(chassisTonnage);
+
+            return modifiedTonnage;
         }
 
         public static int CalculateMechPartsCost(SimGameState sgs, double totalTonnage) {
