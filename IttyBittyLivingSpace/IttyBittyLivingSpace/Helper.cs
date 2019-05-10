@@ -24,25 +24,25 @@ namespace IttyBittyLivingSpace {
 
     public static class Helper {
         
-        public static int CalculateActiveMechCosts(SimGameState sgs) {
+        public static int CalculateTotalForUpkeep(SimGameState sgs) {
             Mod.Log.Info($" === Calculating Active Mech Costs === ");
 
             int totalCost = 0;
             foreach (KeyValuePair<int, MechDef> entry in sgs.ActiveMechs) {
-                totalCost += CalculateMechCost(entry.Value);
+                totalCost += CaculateUpkeepCost(entry.Value);
             }
 
             Mod.Log.Info($" Total cost for active mechs:{totalCost}");
             return totalCost;
         }
 
-        public static List<KeyValuePair<string, int>> GetActiveMechLabels(SimGameState sgs) {
+        public static List<KeyValuePair<string, int>> GetUpkeepLabels(SimGameState sgs) {
             Mod.Log.Info($" === Calculating Active Mech Labels === ");
 
             List<KeyValuePair<string, int>> labels = new List<KeyValuePair<string, int>>();
             foreach (KeyValuePair<int, MechDef> entry in sgs.ActiveMechs) {
                 MechDef mechDef = entry.Value;
-                int mechCost = CalculateMechCost(mechDef);
+                int mechCost = CaculateUpkeepCost(mechDef);
                 Mod.Log.Debug($"  Adding mech:{mechDef.Name} with cost:{mechCost}");
                 labels.Add(new KeyValuePair<string, int>("MECH: " + mechDef.Name, mechCost));
             }
@@ -50,7 +50,7 @@ namespace IttyBittyLivingSpace {
             return labels;
         }
 
-        private static int CalculateMechCost(MechDef mechDef) {
+        private static int CaculateUpkeepCost(MechDef mechDef) {
             if (mechDef == null || mechDef.Description == null) {
                 Mod.Log.Debug($"  MechDef or mechDef description is null, skipping.");
             }
@@ -145,8 +145,8 @@ namespace IttyBittyLivingSpace {
             return itemSize;
         }
 
-        public static int CalculateGearCost(SimGameState sgs, double totalUnits) {
-            Mod.Log.Debug($" === Calculating Gear Costs === ");
+        public static int CalculateTotalForGearCargo(SimGameState sgs, double totalUnits) {
+            Mod.Log.Debug($" === Calculating Cargo Cost for Gear=== ");
 
             double factoredSize = Math.Ceiling(totalUnits * Mod.Config.GearFactor);
             Mod.Log.Info($"  totalUnits:{totalUnits} x factor:{Mod.Config.GearFactor} = {factoredSize}");
@@ -172,7 +172,7 @@ namespace IttyBittyLivingSpace {
             return (int)Math.Ceiling((double)totalCost);
         }
 
-        public static double GetMechPartsTonnage(SimGameState sgs) {
+        public static double CalculateTonnageForAllMechParts(SimGameState sgs) {
             double allPartsTonnage = 0;
             foreach (ChassisDef cDef in sgs.GetAllInventoryMechDefs(true)) {
 
@@ -186,9 +186,11 @@ namespace IttyBittyLivingSpace {
 
         public static double CalculateChassisTonnage(ChassisDef cDef) {
             int itemCount = cDef.MechPartCount;
-            Mod.Log.Debug($"ChassisDef: {cDef.Description.Id} has count: x{cDef.MechPartCount} with max: x{cDef.MechPartMax}");
+            Mod.Log.Debug($"ChassisDef: {cDef.Description.Id} has count: x{itemCount} with max: x{cDef.MechPartMax}");
 
-            double rawPartsTonnage = 0.0;
+            // TODO: In the case of multiple assembled mechs, would MechPartMax here be parts * chassis? I suspect this
+            //  could be causing the bug that granner reported. Need a log to verify.
+            double rawPartsTonnage;
             if (cDef.MechPartCount == 0) {
                 Mod.Log.Debug($"  Complete chassis, adding tonnage:{cDef.Tonnage}");
                 rawPartsTonnage = cDef.Tonnage;
@@ -230,8 +232,8 @@ namespace IttyBittyLivingSpace {
             return modifiedTonnage;
         }
 
-        public static int CalculateMechPartsCost(SimGameState sgs, double totalTonnage) {
-            Mod.Log.Debug($" === Calculating Mech Parts === ");
+        public static int CalculateTotalForMechPartsCargo(SimGameState sgs, double totalTonnage) {
+            Mod.Log.Debug($" === Calculating Cargo Cost for Mech Parts === ");
 
             double factoredTonnage = Math.Ceiling(totalTonnage * Mod.Config.PartsFactor);
             Mod.Log.Debug($"  factoredTonnage:{factoredTonnage} = totalTonnage:{totalTonnage} x factor:{Mod.Config.PartsFactor}");

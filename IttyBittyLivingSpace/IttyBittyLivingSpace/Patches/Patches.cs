@@ -25,13 +25,13 @@ namespace IttyBittyLivingSpace {
             }
 
             // Add the new costs
-            int activeMechCosts = Helper.CalculateActiveMechCosts(__instance);
+            int activeMechCosts = Helper.CalculateTotalForUpkeep(__instance);
 
             double gearInventorySize = Helper.GetGearInventorySize(__instance);
-            int gearStorageCosts = Helper.CalculateGearCost(__instance, gearInventorySize);
+            int gearStorageCosts = Helper.CalculateTotalForGearCargo(__instance, gearInventorySize);
 
-            double mechPartsTonnage = Helper.GetMechPartsTonnage(__instance);
-            int mechPartsStorageCost = Helper.CalculateMechPartsCost(__instance, mechPartsTonnage);
+            double mechPartsTonnage = Helper.CalculateTonnageForAllMechParts(__instance);
+            int mechPartsStorageCost = Helper.CalculateTotalForMechPartsCargo(__instance, mechPartsTonnage);
 
             int total = __result - defaultMechCosts + activeMechCosts + gearStorageCosts + mechPartsStorageCost;
             Mod.Log.Info($"SGS:GE - total:{total} ==> result:{__result} - defaultMechCosts:{defaultMechCosts} = {__result - defaultMechCosts} + activeMechs:{activeMechCosts} + gearStorage:{gearStorageCosts} + partsStorage:{mechPartsStorageCost}");
@@ -56,18 +56,18 @@ namespace IttyBittyLivingSpace {
 
             // Extract the active mechs from the list, then re-add the updated price
             List<KeyValuePair<string, int>> filteredKeys = Helper.FilterActiveMechs(currentKeys, ___simState);
-            List<KeyValuePair<string, int>> activeMechs = Helper.GetActiveMechLabels(___simState);
+            List<KeyValuePair<string, int>> activeMechs = Helper.GetUpkeepLabels(___simState);
             filteredKeys.AddRange(activeMechs);
 
             // Add the new costs
-            int activeMechCosts = Helper.CalculateActiveMechCosts(___simState);
+            int activeMechCosts = Helper.CalculateTotalForUpkeep(___simState);
 
             double gearInventorySize = Helper.GetGearInventorySize(___simState);
-            int gearStorageCost = Helper.CalculateGearCost(___simState, gearInventorySize);
+            int gearStorageCost = Helper.CalculateTotalForGearCargo(___simState, gearInventorySize);
             filteredKeys.Add(new KeyValuePair<string, int>($"WHSE: Gear ({gearInventorySize} units)", gearStorageCost));
 
-            double mechPartsTonnage = Helper.GetMechPartsTonnage(___simState);
-            int mechPartsStorageCost = Helper.CalculateMechPartsCost(___simState, mechPartsTonnage);
+            double mechPartsTonnage = Helper.CalculateTonnageForAllMechParts(___simState);
+            int mechPartsStorageCost = Helper.CalculateTotalForMechPartsCargo(___simState, mechPartsTonnage);
             filteredKeys.Add(new KeyValuePair<string, int>($"WHSE: Mech Parts ({mechPartsTonnage} tons)", mechPartsStorageCost));
 
             filteredKeys.Sort(new ExpensesSorter());
@@ -175,8 +175,16 @@ namespace IttyBittyLivingSpace {
             if (data != null && ___descriptionText != null) {
                 ChassisDef chassisDef = (ChassisDef)data;
 
+                // Calculate total tonnage costs
+                SimGameState sgs = UnityGameInstance.BattleTechGame.Simulation;
+                double totalTonnage = Helper.CalculateTonnageForAllMechParts(sgs);
+                int totalCost = Helper.CalculateTotalForMechPartsCargo(sgs, totalTonnage);
+
                 double storageTons = Helper.CalculateChassisTonnage(chassisDef);
-                string newDetails = chassisDef.Description.Details + $"\n\n<color=#FF0000>Storage Tonnage: {storageTons}</color>";
+                double tonnageFraction = storageTons / totalTonnage;
+                int fractionalCost = (int)Math.Ceiling(totalCost * tonnageFraction);
+
+                string newDetails = chassisDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(fractionalCost)} from {storageTons} t</color>";
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
                 ___descriptionText.SetText(newDetails, new object[0]);
             } else {
@@ -193,8 +201,16 @@ namespace IttyBittyLivingSpace {
             if (data != null && ___detailText != null) {
                 MechComponentDef mcDef = (MechComponentDef)data;
 
+                // Calculate total gear storage size
+                SimGameState sgs = UnityGameInstance.BattleTechGame.Simulation;
+                double totalSize = Helper.GetGearInventorySize(sgs);
+                int totalCost = Helper.CalculateTotalForGearCargo(sgs, totalSize);
+
                 float storageSize = Helper.CalculateGearStorageSize(mcDef);
-                string newDetails = mcDef.Description.Details + $"\n\n<color=#FF0000>Storage Size: {storageSize}</color>";
+                double sizeFraction = storageSize / totalSize;
+                int fractionalCost = (int)Math.Ceiling(totalCost * sizeFraction);
+
+                string newDetails = mcDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(fractionalCost)} from size:{storageSize}u</color>";
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
                 ___detailText.SetText(newDetails, new object[0]);
             } else {
