@@ -227,8 +227,16 @@ namespace IttyBittyLivingSpace {
             if (data != null && ___body != null) {
                 WeaponDef weaponDef = (WeaponDef)data;
 
+                // Calculate total gear storage size
+                SimGameState sgs = UnityGameInstance.BattleTechGame.Simulation;
+                double totalSize = Helper.GetGearInventorySize(sgs);
+                int totalCost = Helper.CalculateTotalForGearCargo(sgs, totalSize);
+
                 float storageSize = Helper.CalculateGearStorageSize(weaponDef);
-                string newDetails = weaponDef.Description.Details + $"\n\n<color=#FF0000>Storage Size: {storageSize}</color>";
+                double sizeFraction = storageSize / totalSize;
+                int fractionalCost = (int)Math.Ceiling(totalCost * sizeFraction);
+
+                string newDetails = weaponDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(fractionalCost)} from size:{storageSize}u</color>";
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
                 ___body.SetText(newDetails, new object[0]);
             } else {
