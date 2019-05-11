@@ -184,7 +184,7 @@ namespace IttyBittyLivingSpace {
                 double tonnageFraction = storageTons / totalTonnage;
                 int fractionalCost = (int)Math.Ceiling(totalCost * tonnageFraction);
 
-                string newDetails = chassisDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(fractionalCost)} from {storageTons} t</color>";
+                string newDetails = chassisDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(fractionalCost)} from tons:{storageTons}</color>";
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
                 ___descriptionText.SetText(newDetails, new object[0]);
             } else {
@@ -210,7 +210,7 @@ namespace IttyBittyLivingSpace {
                 double sizeFraction = storageSize / totalSize;
                 int fractionalCost = (int)Math.Ceiling(totalCost * sizeFraction);
 
-                string newDetails = mcDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(fractionalCost)} from size:{storageSize}u</color>";
+                string newDetails = mcDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(fractionalCost)} from size: {storageSize}u</color>";
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
                 ___detailText.SetText(newDetails, new object[0]);
             } else {
@@ -236,7 +236,7 @@ namespace IttyBittyLivingSpace {
                 double sizeFraction = storageSize / totalSize;
                 int fractionalCost = (int)Math.Ceiling(totalCost * sizeFraction);
 
-                string newDetails = weaponDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(fractionalCost)} from size:{storageSize}u</color>";
+                string newDetails = weaponDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(fractionalCost)} from size: {storageSize}u</color>";
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
                 ___body.SetText(newDetails, new object[0]);
             } else {
