@@ -64,11 +64,11 @@ namespace IttyBittyLivingSpace {
 
             double gearInventorySize = Helper.GetGearInventorySize(___simState);
             int gearStorageCost = Helper.CalculateTotalForGearCargo(___simState, gearInventorySize);
-            filteredKeys.Add(new KeyValuePair<string, int>($"WHSE: Gear ({gearInventorySize} units)", gearStorageCost));
+            filteredKeys.Add(new KeyValuePair<string, int>($"CARGO: Gear ({gearInventorySize} units)", gearStorageCost));
 
             double mechPartsTonnage = Helper.CalculateTonnageForAllMechParts(___simState);
             int mechPartsStorageCost = Helper.CalculateTotalForMechPartsCargo(___simState, mechPartsTonnage);
-            filteredKeys.Add(new KeyValuePair<string, int>($"WHSE: Mech Parts ({mechPartsTonnage} tons)", mechPartsStorageCost));
+            filteredKeys.Add(new KeyValuePair<string, int>($"CARGO: Mech Parts ({mechPartsTonnage} tons)", mechPartsStorageCost));
 
             filteredKeys.Sort(new ExpensesSorter());
 

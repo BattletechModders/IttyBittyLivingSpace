@@ -44,7 +44,7 @@ namespace IttyBittyLivingSpace {
                 MechDef mechDef = entry.Value;
                 int mechCost = CaculateUpkeepCost(mechDef);
                 Mod.Log.Debug($"  Adding mech:{mechDef.Name} with cost:{mechCost}");
-                labels.Add(new KeyValuePair<string, int>("MECH: " + mechDef.Name, mechCost));
+                labels.Add(new KeyValuePair<string, int>("UPKEEP: " + mechDef.Name, mechCost));
             }
 
             return labels;
