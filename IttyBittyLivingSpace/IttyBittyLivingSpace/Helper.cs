@@ -121,10 +121,14 @@ namespace IttyBittyLivingSpace {
         public static float GetGearInventorySize(SimGameState sgs) {
             float totalUnits = 0.0f;
             foreach (MechComponentRef mcRef in sgs.GetAllInventoryItemDefs()) {
-                int itemCount = sgs.GetItemCount(mcRef.Def.Description, mcRef.Def.GetType(), sgs.GetItemCountDamageType(mcRef));
-                float itemSize = CalculateGearStorageSize(mcRef.Def);
-                Mod.Log.Debug($"  Inventory item:({mcRef.Def.Description.Id}) size:{itemSize} qty:{itemCount}");
-                totalUnits += itemSize;
+                if (mcRef.Def != null) {
+                    int itemCount = sgs.GetItemCount(mcRef.Def.Description, mcRef.Def.GetType(), sgs.GetItemCountDamageType(mcRef));
+                    float itemSize = CalculateGearStorageSize(mcRef.Def);
+                    Mod.Log.Debug($"  Inventory item:({mcRef.Def.Description.Id}) size:{itemSize} qty:{itemCount}");
+                    totalUnits += itemSize;
+                } else {
+                    Mod.Log.Info($"  Gear ref missing for:{mcRef.ToString()}! Skipping size calculation.");
+                }
             }
 
             Mod.Log.Debug($"  Total storage units: {totalUnits}u");
