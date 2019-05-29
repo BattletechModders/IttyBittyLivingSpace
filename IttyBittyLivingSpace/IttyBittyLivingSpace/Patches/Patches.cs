@@ -198,17 +198,19 @@ namespace IttyBittyLivingSpace {
     public static class TooltipPrefab_Equipment_SetData {
         public static void Postfix(TooltipPrefab_Equipment __instance, object data, TextMeshProUGUI ___detailText) {
             Mod.Log.Debug($"TP_E:SD - Init");
-            if (data != null && ___detailText != null) {
-                MechComponentDef mcDef = (MechComponentDef)data;
+            SimGameState sgs = UnityGameInstance.BattleTechGame.Simulation;
+            if (data != null && ___detailText != null && sgs != null) {
 
                 // Calculate total gear storage size
-                SimGameState sgs = UnityGameInstance.BattleTechGame.Simulation;
                 double totalSize = Helper.GetGearInventorySize(sgs);
                 int totalCost = Helper.CalculateTotalForGearCargo(sgs, totalSize);
+                Mod.Log.Debug($"    totalCost: {totalCost}");
 
+                MechComponentDef mcDef = (MechComponentDef)data;
                 float storageSize = Helper.CalculateGearStorageSize(mcDef);
                 double sizeFraction = storageSize / totalSize;
                 int fractionalCost = (int)Math.Ceiling(totalCost * sizeFraction);
+                Mod.Log.Debug($"    storageSize: {storageSize}  sizeFraction: {sizeFraction}  fractionalCost: {fractionalCost}");
 
                 string newDetails = mcDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(fractionalCost)} from size: {storageSize}u</color>";
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
@@ -224,11 +226,11 @@ namespace IttyBittyLivingSpace {
     public static class TooltipPrefab_Weapon_SetData {
         public static void Postfix(TooltipPrefab_Weapon __instance, object data, TextMeshProUGUI ___body) {
             Mod.Log.Debug($"TP_W:SD - Init - data:{data} body:{___body}");
-            if (data != null && ___body != null) {
+            SimGameState sgs = UnityGameInstance.BattleTechGame.Simulation;
+            if (data != null && ___body != null && sgs != null) {
                 WeaponDef weaponDef = (WeaponDef)data;
 
                 // Calculate total gear storage size
-                SimGameState sgs = UnityGameInstance.BattleTechGame.Simulation;
                 double totalSize = Helper.GetGearInventorySize(sgs);
                 int totalCost = Helper.CalculateTotalForGearCargo(sgs, totalSize);
 
