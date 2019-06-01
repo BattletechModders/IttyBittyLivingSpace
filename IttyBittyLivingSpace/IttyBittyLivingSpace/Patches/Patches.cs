@@ -12,13 +12,14 @@ using UnityEngine;
 namespace IttyBittyLivingSpace {
 
     [HarmonyPatch(typeof(SimGameState), "GetExpenditures")]
+    [HarmonyPatch(new Type[] { typeof(EconomyScale), typeof(bool) })]
     [HarmonyAfter(new string[] { "de.morphyum.MechMaintenanceByCost" })]
     public static class SimGameState_GetExpenditures {
-        public static void Postfix(SimGameState __instance, ref int __result, bool proRate) {
+        public static void Postfix(SimGameState __instance, ref int __result, EconomyScale expenditureLevel, bool proRate) {
             Mod.Log.Info($"SGS:GE entered with {__result}");
 
             // Subtract the base cost of mechs
-            float expenditureCostModifier = __instance.GetExpenditureCostModifier(__instance.ExpenditureLevel);
+            float expenditureCostModifier = __instance.GetExpenditureCostModifier(expenditureLevel);
             int defaultMechCosts = 0;
             foreach (MechDef mechDef in __instance.ActiveMechs.Values) {
                 defaultMechCosts += Mathf.RoundToInt(expenditureCostModifier * (float)__instance.Constants.Finances.MechCostPerQuarter);
@@ -42,7 +43,7 @@ namespace IttyBittyLivingSpace {
     [HarmonyPatch(typeof(SGCaptainsQuartersStatusScreen), "RefreshData")]
     [HarmonyAfter(new string[] { "de.morphyum.MechMaintenanceByCost", "dZ.Zappo.MonthlyTechAdjustment" })]
     public static class SGCaptainsQuartersStatusScreen_RefreshData {
-        public static void Postfix(SGCaptainsQuartersStatusScreen __instance, bool showMoraleChange,
+        public static void Postfix(SGCaptainsQuartersStatusScreen __instance, EconomyScale expenditureLevel, bool showMoraleChange,
             Transform ___SectionOneExpensesList, TextMeshProUGUI ___SectionOneExpensesField, SimGameState ___simState) {
 
             SimGameState simGameState = UnityGameInstance.BattleTechGame.Simulation;
@@ -51,9 +52,12 @@ namespace IttyBittyLivingSpace {
                 return;
             }
 
-            Mod.Log.Info($"SGCQSS:RD - entered. Parsing current keys.");
-            List<KeyValuePair<string, int>> currentKeys = GetCurrentKeys(___SectionOneExpensesList, ___simState);
+            // TODO: Add this to mech parts maybe?
+            //float expenditureCostModifier = simGameState.GetExpenditureCostModifier(expenditureLevel);
 
+            Mod.Log.Info($"SGCQSS:RD - entered. Parsing current keys.");
+            
+            List<KeyValuePair<string, int>> currentKeys = GetCurrentKeys(___SectionOneExpensesList, ___simState);
             // Extract the active mechs from the list, then re-add the updated price
             List<KeyValuePair<string, int>> filteredKeys = Helper.FilterActiveMechs(currentKeys, ___simState);
             List<KeyValuePair<string, int>> activeMechs = Helper.GetUpkeepLabels(___simState);
