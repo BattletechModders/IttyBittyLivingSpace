@@ -178,17 +178,24 @@ namespace IttyBittyLivingSpace {
             Mod.Log.Debug($"TP_C:SD - Init");
             if (data != null && ___descriptionText != null) {
                 ChassisDef chassisDef = (ChassisDef)data;
+                double storageTons = Helper.CalculateChassisTonnage(chassisDef);
 
                 // Calculate total tonnage costs
                 SimGameState sgs = UnityGameInstance.BattleTechGame.Simulation;
                 double totalTonnage = Helper.CalculateTonnageForAllMechParts(sgs);
-                int totalCost = Helper.CalculateTotalForMechPartsCargo(sgs, totalTonnage);
 
-                double storageTons = Helper.CalculateChassisTonnage(chassisDef);
-                double tonnageFraction = storageTons / totalTonnage;
-                int fractionalCost = (int)Math.Ceiling(totalCost * tonnageFraction);
+                int storageCost = 0;
+                if (totalTonnage > 0) {
+                    int totalCost = Helper.CalculateTotalForMechPartsCargo(sgs, totalTonnage);
+                    double tonnageFraction = storageTons / totalTonnage;
+                    storageCost = (int)Math.Ceiling(totalCost * tonnageFraction);
+                } else {
+                    double factoredTonnage = Math.Ceiling(storageTons * Mod.Config.PartsFactor);
+                    double scaledTonnage = Math.Pow(factoredTonnage, Mod.Config.PartsExponent);
+                    storageCost = (int)(Mod.Config.PartsCostPerTon * scaledTonnage);
+                }
 
-                string newDetails = chassisDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(fractionalCost)} from tons:{storageTons}</color>";
+                string newDetails = chassisDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(storageCost)} from {storageTons} tons</color>";
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
                 ___descriptionText.SetText(newDetails, new object[0]);
             } else {
@@ -206,17 +213,27 @@ namespace IttyBittyLivingSpace {
             if (data != null && ___detailText != null && sgs != null) {
 
                 // Calculate total gear storage size
-                double totalSize = Helper.GetGearInventorySize(sgs);
-                int totalCost = Helper.CalculateTotalForGearCargo(sgs, totalSize);
-                Mod.Log.Debug($"    totalCost: {totalCost}");
-
                 MechComponentDef mcDef = (MechComponentDef)data;
-                float storageSize = Helper.CalculateGearStorageSize(mcDef);
-                double sizeFraction = storageSize / totalSize;
-                int fractionalCost = (int)Math.Ceiling(totalCost * sizeFraction);
-                Mod.Log.Debug($"    storageSize: {storageSize}  sizeFraction: {sizeFraction}  fractionalCost: {fractionalCost}");
+                float componentStorageSize = Helper.CalculateGearStorageSize(mcDef);
+                double totalSize = Helper.GetGearInventorySize(sgs);
 
-                string newDetails = mcDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(fractionalCost)} from size: {storageSize}u</color>";
+                int storageCost = 0;
+                if (totalSize > 0) {
+                    // Handle exponentiation of cost
+                    int totalCost = Helper.CalculateTotalForGearCargo(sgs, totalSize);
+
+                    double sizeFraction = componentStorageSize / totalSize;
+                    storageCost = (int)Math.Ceiling(totalCost * sizeFraction);
+                    Mod.Log.Debug($"    totalCost: {totalCost}  storageSize: {componentStorageSize}  sizeFraction: {sizeFraction}  fractionalCost: {storageCost}");
+                } else {
+                    // Assume no exponentiation when there is no gear
+                    double factoredSize = Math.Ceiling(componentStorageSize * Mod.Config.GearFactor);
+                    double scaledUnits = Math.Pow(factoredSize, Mod.Config.GearExponent);
+                    storageCost = (int)(Mod.Config.GearCostPerUnit * scaledUnits);
+                    Mod.Log.Info($"  totalUnits:{componentStorageSize} x factor:{Mod.Config.GearFactor} = {factoredSize}");
+                }
+
+                string newDetails = mcDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(storageCost)} from {componentStorageSize}u size</color>";
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
                 ___detailText.SetText(newDetails, new object[0]);
             } else {
@@ -233,16 +250,27 @@ namespace IttyBittyLivingSpace {
             SimGameState sgs = UnityGameInstance.BattleTechGame.Simulation;
             if (data != null && ___body != null && sgs != null) {
                 WeaponDef weaponDef = (WeaponDef)data;
+                float weaponStorageSize = Helper.CalculateGearStorageSize(weaponDef);
 
                 // Calculate total gear storage size
                 double totalSize = Helper.GetGearInventorySize(sgs);
-                int totalCost = Helper.CalculateTotalForGearCargo(sgs, totalSize);
 
-                float storageSize = Helper.CalculateGearStorageSize(weaponDef);
-                double sizeFraction = storageSize / totalSize;
-                int fractionalCost = (int)Math.Ceiling(totalCost * sizeFraction);
+                int storageCost = 0;
+                if (totalSize > 0) {
+                    // Handle exponentiation of cost
+                    int totalCost = Helper.CalculateTotalForGearCargo(sgs, totalSize);
+                    double sizeFraction = weaponStorageSize / totalSize;
+                    storageCost = (int)Math.Ceiling(totalCost * sizeFraction);
+                    Mod.Log.Debug($"    totalCost: {totalCost}  storageSize: {weaponStorageSize}  sizeFraction: {sizeFraction}  fractionalCost: {storageCost}");
+                } else {
+                    // Assume no exponentiation when there is no gear
+                    double factoredSize = Math.Ceiling(weaponStorageSize * Mod.Config.GearFactor);
+                    double scaledUnits = Math.Pow(factoredSize, Mod.Config.GearExponent);
+                    storageCost = (int)(Mod.Config.GearCostPerUnit * scaledUnits);
+                    Mod.Log.Info($"  totalUnits:{weaponStorageSize} x factor:{Mod.Config.GearFactor} = {factoredSize}");
+                }
 
-                string newDetails = weaponDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(fractionalCost)} from size: {storageSize}u</color>";
+                string newDetails = weaponDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(storageCost)} from {weaponStorageSize}u size</color>";
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
                 ___body.SetText(newDetails, new object[0]);
             } else {
