@@ -197,7 +197,7 @@ namespace IttyBittyLivingSpace {
 
                 string newDetails = chassisDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(storageCost)} from {storageTons} tons</color>";
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
-                ___descriptionText.SetText(newDetails, new object[0]);
+                ___descriptionText.SetText(newDetails);
             } else {
                 Mod.Log.Debug($"TP_C:SD - Skipping");
             }
@@ -235,7 +235,7 @@ namespace IttyBittyLivingSpace {
 
                 string newDetails = mcDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(storageCost)} from {componentStorageSize}u size</color>";
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
-                ___detailText.SetText(newDetails, new object[0]);
+                ___detailText.SetText(newDetails);
             } else {
                 Mod.Log.Debug($"TP_E:SD - Skipping");
             }
@@ -272,7 +272,7 @@ namespace IttyBittyLivingSpace {
 
                 string newDetails = weaponDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(storageCost)} from {weaponStorageSize}u size</color>";
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
-                ___body.SetText(newDetails, new object[0]);
+                ___body.SetText(newDetails);
             } else {
                 Mod.Log.Debug($"TP_W:SD - Skipping");
             }
