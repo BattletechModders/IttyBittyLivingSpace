@@ -2,6 +2,7 @@
 using BattleTech.UI;
 using BattleTech.UI.Tooltips;
 using Harmony;
+using Localize;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -195,9 +196,9 @@ namespace IttyBittyLivingSpace {
                     storageCost = (int)(Mod.Config.PartsCostPerTon * scaledTonnage);
                 }
 
-                string newDetails = chassisDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(storageCost)} from {storageTons} tons</color>";
+                Text newDetails =  new Text(chassisDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(storageCost)} from {storageTons} tons</color>");
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
-                ___descriptionText.SetText(newDetails);
+                ___descriptionText.SetText(newDetails.ToString());
             } else {
                 Mod.Log.Debug($"TP_C:SD - Skipping");
             }
@@ -233,9 +234,9 @@ namespace IttyBittyLivingSpace {
                     Mod.Log.Info($"  totalUnits:{componentStorageSize} x factor:{Mod.Config.GearFactor} = {factoredSize}");
                 }
 
-                string newDetails = mcDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(storageCost)} from {componentStorageSize}u size</color>";
+                Text newDetails = new Text(mcDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(storageCost)} from {componentStorageSize}u size</color>");
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
-                ___detailText.SetText(newDetails);
+                ___detailText.SetText(newDetails.ToString());
             } else {
                 Mod.Log.Debug($"TP_E:SD - Skipping");
             }
@@ -270,9 +271,9 @@ namespace IttyBittyLivingSpace {
                     Mod.Log.Info($"  totalUnits:{weaponStorageSize} x factor:{Mod.Config.GearFactor} = {factoredSize}");
                 }
 
-                string newDetails = weaponDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(storageCost)} from {weaponStorageSize}u size</color>";
+                Text newDetails = new Text(weaponDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(storageCost)} from {weaponStorageSize}u size</color>");
                 Mod.Log.Debug($"  Setting details: {newDetails}u");
-                ___body.SetText(newDetails);
+                ___body.SetText(newDetails.ToString());
             } else {
                 Mod.Log.Debug($"TP_W:SD - Skipping");
             }
