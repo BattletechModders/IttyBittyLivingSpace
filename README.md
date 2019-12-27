@@ -1,6 +1,8 @@
 # IttyBittyLivingSpace
 This mod for the [HBS BattleTech](http://battletechgame.com/) game makes storage aboard the dropships significantly more expensive. Inventory and mech parts kept in storage have a monthly recurring cost that increases exponentially.
 
+This mod requires [https://github.com/iceraptor/IRBTModUtils/]. Grab the latest release of __IRBTModUtils__ and extract it in your Mods/ directory alongside of this mod.
+
 ## Active Mech Upkeep
 
 Mechs currently in a Mechbay during a financial report triggers add to the monthly upkeep as well. Each mech's `ChassisDef.DescriptionDef.Cost` count as its base cost, which is multiplied an upkeep factor. This factor is defined as **UpkeepChassisMulti**, which defaults to 0.01. For a chassis cost of 600,000 c-bills and the default multi, the monthly upkeep would be 6,000 c-bills.
