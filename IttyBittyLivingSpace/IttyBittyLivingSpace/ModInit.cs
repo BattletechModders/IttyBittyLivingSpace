@@ -3,16 +3,17 @@ using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using us.frostraptor.modUtils.logging;
 
 namespace IttyBittyLivingSpace {
 
     public static class Mod {
-        public static Logger Log;
+        public static IntraModLogger Log;
         public static string ModDir;
         public static ModConfig Config;
     }
 
-    public static class IttyBittyLivingSpace {
+    public static class ModInit {
 
         public const string HarmonyPackage = "us.frostraptor.IttyBittyLivingSpace";
         public const string LogName = "itty_bitty_living_space";
@@ -30,7 +31,7 @@ namespace IttyBittyLivingSpace {
                 Mod.Config = new ModConfig();
             }
 
-            Mod.Log = new Logger(modDirectory, LogName);
+            Mod.Log = new IntraModLogger(modDirectory, LogName, Mod.Config.Debug, Mod.Config.Trace);
 
             Assembly asm = Assembly.GetExecutingAssembly();
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(asm.Location);

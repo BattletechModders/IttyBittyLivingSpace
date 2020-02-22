@@ -11,6 +11,7 @@ namespace IttyBittyLivingSpace {
 
         // If true, many logs will be printed
         public bool Debug = false;
+        public bool Trace = false;
 
         public float GearFactor = 1.0f;
         public int GearCostPerUnit = 100;
@@ -28,7 +29,7 @@ namespace IttyBittyLivingSpace {
 
         public void LogConfig() {
             Mod.Log.Info("=== MOD CONFIG BEGIN ===");
-            Mod.Log.Info($"  DEBUG: {this.Debug}");
+            Mod.Log.Info($"  DEBUG: {this.Debug}  TRACE: {this.Trace}");
             Mod.Log.Info($"  Storage: Gear       - Factor:x{GearFactor}  CostPerUnit:{GearCostPerUnit} Exponent:{GearExponent}");
             Mod.Log.Info($"  Storage: Mech Parts - Factor:x{PartsFactor} CostPerTon:{PartsCostPerTon} Exponent:{PartsExponent}");
             Mod.Log.Info($"  Upkeep: gearMulti: x{UpkeepGearMulti} chassisMulti: x{UpkeepChassisMulti}");
