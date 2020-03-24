@@ -43,8 +43,9 @@ namespace IttyBittyLivingSpace {
             foreach (KeyValuePair<int, MechDef> entry in sgs.ActiveMechs) {
                 MechDef mechDef = entry.Value;
                 int mechCost = CaculateUpkeepCost(mechDef);
-                Mod.Log.Debug($"  Adding mech:{mechDef.Name} with cost:{mechCost}");
-                labels.Add(new KeyValuePair<string, int>("UPKEEP: " + mechDef.Name, mechCost));
+                string mechName = string.IsNullOrEmpty(mechDef.Description.UIName) ? mechDef.Name : mechDef.Description.UIName; 
+                Mod.Log.Debug($"  Adding mech:{mechName} with cost:{mechCost}");
+                labels.Add(new KeyValuePair<string, int>("UPKEEP: " + mechName, mechCost));
             }
 
             return labels;
