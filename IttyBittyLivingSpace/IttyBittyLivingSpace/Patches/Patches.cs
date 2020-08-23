@@ -17,7 +17,7 @@ namespace IttyBittyLivingSpace {
     [HarmonyAfter(new string[] { "de.morphyum.MechMaintenanceByCost" })]
     public static class SimGameState_GetExpenditures {
         public static void Postfix(SimGameState __instance, ref int __result, EconomyScale expenditureLevel, bool proRate) {
-            Mod.Log.Info($"SGS:GE entered with {__result}");
+            Mod.Log.Info?.Write($"SGS:GE entered with {__result}");
 
             // Subtract the base cost of mechs
             float expenditureCostModifier = __instance.GetExpenditureCostModifier(expenditureLevel);
@@ -36,7 +36,7 @@ namespace IttyBittyLivingSpace {
             int mechPartsStorageCost = Helper.CalculateTotalForMechPartsCargo(__instance, mechPartsTonnage);
 
             int total = __result - defaultMechCosts + activeMechCosts + gearStorageCosts + mechPartsStorageCost;
-            Mod.Log.Info($"SGS:GE - total:{total} ==> result:{__result} - defaultMechCosts:{defaultMechCosts} = {__result - defaultMechCosts} + activeMechs:{activeMechCosts} + gearStorage:{gearStorageCosts} + partsStorage:{mechPartsStorageCost}");
+            Mod.Log.Info?.Write($"SGS:GE - total:{total} ==> result:{__result} - defaultMechCosts:{defaultMechCosts} = {__result - defaultMechCosts} + activeMechs:{activeMechCosts} + gearStorage:{gearStorageCosts} + partsStorage:{mechPartsStorageCost}");
             __result = total;
         }
     }
@@ -49,14 +49,14 @@ namespace IttyBittyLivingSpace {
 
             SimGameState simGameState = UnityGameInstance.BattleTechGame.Simulation;
             if (__instance == null || ___SectionOneExpensesList == null || ___SectionOneExpensesField == null || simGameState == null) {
-                Mod.Log.Info($"SGCQSS:RD - skipping");
+                Mod.Log.Info?.Write($"SGCQSS:RD - skipping");
                 return;
             }
 
             // TODO: Add this to mech parts maybe?
             //float expenditureCostModifier = simGameState.GetExpenditureCostModifier(expenditureLevel);
 
-            Mod.Log.Info($"SGCQSS:RD - entered. Parsing current keys.");
+            Mod.Log.Info?.Write($"SGCQSS:RD - entered. Parsing current keys.");
             
             List<KeyValuePair<string, int>> currentKeys = GetCurrentKeys(___SectionOneExpensesList, ___simState);
             // Extract the active mechs from the list, then re-add the updated price
@@ -77,32 +77,32 @@ namespace IttyBittyLivingSpace {
 
             filteredKeys.Sort(new ExpensesSorter());
 
-            Mod.Log.Info($"SGCQSS:RD - Clearing items");
+            Mod.Log.Info?.Write($"SGCQSS:RD - Clearing items");
             ClearListLineItems(___SectionOneExpensesList, ___simState);
 
-            Mod.Log.Info($"SGCQSS:RD - Adding listLineItems");
+            Mod.Log.Info?.Write($"SGCQSS:RD - Adding listLineItems");
             int totalCost = 0;
             try {
                 foreach (KeyValuePair<string, int> kvp in filteredKeys) {
-                    Mod.Log.Info($"SGCQSS:RD - Adding key:{kvp.Key} value:{kvp.Value}");
+                    Mod.Log.Info?.Write($"SGCQSS:RD - Adding key:{kvp.Key} value:{kvp.Value}");
                     totalCost += kvp.Value;
                     AddListLineItem(___SectionOneExpensesList, ___simState, kvp.Key, SimGameState.GetCBillString(kvp.Value));
                 }
 
             } catch (Exception e) {
-                Mod.Log.Info($"SGCQSS:RD - failed to add lineItemParts due to: {e.Message}");
+                Mod.Log.Info?.Write($"SGCQSS:RD - failed to add lineItemParts due to: {e.Message}");
             }
 
             // Update summary costs
             int newCosts = totalCost;
             string newCostsS = SimGameState.GetCBillString(newCosts);
-            Mod.Log.Debug($"SGCQSS:RD - total:{newCosts} = activeMechs:{activeMechCosts} + gearStorage:{gearStorageCost} + partsStorage:{mechPartsStorageCost}");
+            Mod.Log.Debug?.Write($"SGCQSS:RD - total:{newCosts} = activeMechs:{activeMechCosts} + gearStorage:{gearStorageCost} + partsStorage:{mechPartsStorageCost}");
 
             try {
                 ___SectionOneExpensesField.SetText(SimGameState.GetCBillString(newCosts));
-                Mod.Log.Debug($"SGCQSS:RD - updated ");
+                Mod.Log.Debug?.Write($"SGCQSS:RD - updated ");
             } catch (Exception e) {
-                Mod.Log.Info($"SGCQSS:RD - failed to update summary costs section due to: {e.Message}");
+                Mod.Log.Info?.Write($"SGCQSS:RD - failed to update summary costs section due to: {e.Message}");
             }
         }
 
@@ -116,26 +116,26 @@ namespace IttyBittyLivingSpace {
                     Transform transform = (Transform)obj;
                     SGKeyValueView component = transform.gameObject.GetComponent<SGKeyValueView>();
 
-                    Mod.Log.Debug($"SGCQSS:RD - Reading key from component:{component.name}.");
+                    Mod.Log.Debug?.Write($"SGCQSS:RD - Reading key from component:{component.name}.");
                     Traverse keyT = Traverse.Create(component).Field("Key");
                     TextMeshProUGUI keyText = (TextMeshProUGUI)keyT.GetValue();
                     string key = keyText.text;
-                    Mod.Log.Debug($"SGCQSS:RD - key found as: {key}");
+                    Mod.Log.Debug?.Write($"SGCQSS:RD - key found as: {key}");
 
                     Traverse valueT = Traverse.Create(component).Field("Value");
                     TextMeshProUGUI valueText = (TextMeshProUGUI)valueT.GetValue();
                     string valueS = valueText.text;
                     string digits = Regex.Replace(valueS, @"[^\d]", "");
-                    Mod.Log.Debug($"SGCQSS:RD - rawValue:{valueS} digits:{digits}");
+                    Mod.Log.Debug?.Write($"SGCQSS:RD - rawValue:{valueS} digits:{digits}");
                     int value = Int32.Parse(digits);
 
-                    Mod.Log.Debug($"SGCQSS:RD - found existing pair: {key} / {value}");
+                    Mod.Log.Debug?.Write($"SGCQSS:RD - found existing pair: {key} / {value}");
                     KeyValuePair<string, int> kvp = new KeyValuePair<string, int>(key, value);
                     currentKeys.Add(kvp);
 
                 }
             } catch (Exception e) {
-                Mod.Log.Info($"Failed to get key-value pairs: {e.Message}");
+                Mod.Log.Info?.Write($"Failed to get key-value pairs: {e.Message}");
             }
 
             return currentKeys;
@@ -176,7 +176,7 @@ namespace IttyBittyLivingSpace {
     [HarmonyAfter(new string[] { "us.frostraptor.IRUITweaks" })]
     public static class TooltipPrefab_Chassis_SetData {
         public static void Postfix(TooltipPrefab_Chassis __instance, object data, TextMeshProUGUI ___descriptionText) {
-            Mod.Log.Debug($"TP_C:SD - Init");
+            Mod.Log.Debug?.Write($"TP_C:SD - Init");
             if (data != null && ___descriptionText != null) {
                 ChassisDef chassisDef = (ChassisDef)data;
                 double storageTons = Helper.CalculateChassisTonnage(chassisDef);
@@ -197,10 +197,10 @@ namespace IttyBittyLivingSpace {
                 }
 
                 Text newDetails =  new Text(chassisDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(storageCost)} from {storageTons} tons</color>");
-                Mod.Log.Debug($"  Setting details: {newDetails}u");
+                Mod.Log.Debug?.Write($"  Setting details: {newDetails}u");
                 ___descriptionText.SetText(newDetails.ToString());
             } else {
-                Mod.Log.Debug($"TP_C:SD - Skipping");
+                Mod.Log.Debug?.Write($"TP_C:SD - Skipping");
             }
         }
     }
@@ -209,7 +209,7 @@ namespace IttyBittyLivingSpace {
     [HarmonyAfter(new string[] { "us.frostraptor.IRUITweaks" })]
     public static class TooltipPrefab_Equipment_SetData {
         public static void Postfix(TooltipPrefab_Equipment __instance, object data, TextMeshProUGUI ___detailText) {
-            Mod.Log.Debug($"TP_E:SD - Init");
+            Mod.Log.Debug?.Write($"TP_E:SD - Init");
             SimGameState sgs = UnityGameInstance.BattleTechGame.Simulation;
             if (data != null && ___detailText != null && sgs != null) {
 
@@ -225,20 +225,20 @@ namespace IttyBittyLivingSpace {
 
                     double sizeFraction = componentStorageSize / totalSize;
                     storageCost = (int)Math.Ceiling(totalCost * sizeFraction);
-                    Mod.Log.Debug($"    totalCost: {totalCost}  storageSize: {componentStorageSize}  sizeFraction: {sizeFraction}  fractionalCost: {storageCost}");
+                    Mod.Log.Debug?.Write($"    totalCost: {totalCost}  storageSize: {componentStorageSize}  sizeFraction: {sizeFraction}  fractionalCost: {storageCost}");
                 } else {
                     // Assume no exponentiation when there is no gear
                     double factoredSize = Math.Ceiling(componentStorageSize * Mod.Config.GearFactor);
                     double scaledUnits = Math.Pow(factoredSize, Mod.Config.GearExponent);
                     storageCost = (int)(Mod.Config.GearCostPerUnit * scaledUnits);
-                    Mod.Log.Info($"  totalUnits:{componentStorageSize} x factor:{Mod.Config.GearFactor} = {factoredSize}");
+                    Mod.Log.Info?.Write($"  totalUnits:{componentStorageSize} x factor:{Mod.Config.GearFactor} = {factoredSize}");
                 }
 
                 Text newDetails = new Text(mcDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(storageCost)} from {componentStorageSize}u size</color>");
-                Mod.Log.Debug($"  Setting details: {newDetails}u");
+                Mod.Log.Debug?.Write($"  Setting details: {newDetails}u");
                 ___detailText.SetText(newDetails.ToString());
             } else {
-                Mod.Log.Debug($"TP_E:SD - Skipping");
+                Mod.Log.Debug?.Write($"TP_E:SD - Skipping");
             }
         }
     }
@@ -247,7 +247,7 @@ namespace IttyBittyLivingSpace {
     [HarmonyAfter(new string[] { "us.frostraptor.IRUITweaks" })]
     public static class TooltipPrefab_Weapon_SetData {
         public static void Postfix(TooltipPrefab_Weapon __instance, object data, TextMeshProUGUI ___body) {
-            Mod.Log.Debug($"TP_W:SD - Init - data:{data} body:{___body}");
+            Mod.Log.Debug?.Write($"TP_W:SD - Init - data:{data} body:{___body}");
             SimGameState sgs = UnityGameInstance.BattleTechGame.Simulation;
             if (data != null && ___body != null && sgs != null) {
                 WeaponDef weaponDef = (WeaponDef)data;
@@ -262,20 +262,20 @@ namespace IttyBittyLivingSpace {
                     int totalCost = Helper.CalculateTotalForGearCargo(sgs, totalSize);
                     double sizeFraction = weaponStorageSize / totalSize;
                     storageCost = (int)Math.Ceiling(totalCost * sizeFraction);
-                    Mod.Log.Debug($"    totalCost: {totalCost}  storageSize: {weaponStorageSize}  sizeFraction: {sizeFraction}  fractionalCost: {storageCost}");
+                    Mod.Log.Debug?.Write($"    totalCost: {totalCost}  storageSize: {weaponStorageSize}  sizeFraction: {sizeFraction}  fractionalCost: {storageCost}");
                 } else {
                     // Assume no exponentiation when there is no gear
                     double factoredSize = Math.Ceiling(weaponStorageSize * Mod.Config.GearFactor);
                     double scaledUnits = Math.Pow(factoredSize, Mod.Config.GearExponent);
                     storageCost = (int)(Mod.Config.GearCostPerUnit * scaledUnits);
-                    Mod.Log.Info($"  totalUnits:{weaponStorageSize} x factor:{Mod.Config.GearFactor} = {factoredSize}");
+                    Mod.Log.Info?.Write($"  totalUnits:{weaponStorageSize} x factor:{Mod.Config.GearFactor} = {factoredSize}");
                 }
 
                 Text newDetails = new Text(weaponDef.Description.Details + $"\n\n<color=#FF0000>Cargo Cost:{SimGameState.GetCBillString(storageCost)} from {weaponStorageSize}u size</color>");
-                Mod.Log.Debug($"  Setting details: {newDetails}u");
+                Mod.Log.Debug?.Write($"  Setting details: {newDetails}u");
                 ___body.SetText(newDetails.ToString());
             } else {
-                Mod.Log.Debug($"TP_W:SD - Skipping");
+                Mod.Log.Debug?.Write($"TP_W:SD - Skipping");
             }
         }
     }

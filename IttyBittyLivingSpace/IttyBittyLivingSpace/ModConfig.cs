@@ -28,12 +28,12 @@ namespace IttyBittyLivingSpace {
         public Dictionary<string, float> UpkeepChassisTagMultis = new Dictionary<string, float>();
 
         public void LogConfig() {
-            Mod.Log.Info("=== MOD CONFIG BEGIN ===");
-            Mod.Log.Info($"  DEBUG: {this.Debug}  TRACE: {this.Trace}");
-            Mod.Log.Info($"  Storage: Gear       - Factor:x{GearFactor}  CostPerUnit:{GearCostPerUnit} Exponent:{GearExponent}");
-            Mod.Log.Info($"  Storage: Mech Parts - Factor:x{PartsFactor} CostPerTon:{PartsCostPerTon} Exponent:{PartsExponent}");
-            Mod.Log.Info($"  Upkeep: gearMulti: x{UpkeepGearMulti} chassisMulti: x{UpkeepChassisMulti}");
-            Mod.Log.Info("=== MOD CONFIG END ===");
+            Mod.Log.Info?.Write("=== MOD CONFIG BEGIN ===");
+            Mod.Log.Info?.Write($"  DEBUG: {this.Debug}  TRACE: {this.Trace}");
+            Mod.Log.Info?.Write($"  Storage: Gear       - Factor:x{GearFactor}  CostPerUnit:{GearCostPerUnit} Exponent:{GearExponent}");
+            Mod.Log.Info?.Write($"  Storage: Mech Parts - Factor:x{PartsFactor} CostPerTon:{PartsCostPerTon} Exponent:{PartsExponent}");
+            Mod.Log.Info?.Write($"  Upkeep: gearMulti: x{UpkeepGearMulti} chassisMulti: x{UpkeepChassisMulti}");
+            Mod.Log.Info?.Write("=== MOD CONFIG END ===");
         }
         
     }
