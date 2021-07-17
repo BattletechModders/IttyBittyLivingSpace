@@ -1,12 +1,13 @@
 {
     "Name": "IttyBittyLivingSpace",
     "Enabled": true,
-    "Version": "0.8.1",
-    "Description": "Makes the tight storage aboard dropships more expensive.",
+    "Version": "1.0.0",
+    "Description": "Makes the storage aboard dropships more expensive.",
     "Author": "IceRaptor",
     "Website": "https://github.com/IceRaptor/IttyBittyLivingSpace",
     "Contact": "",
     "DLL": "IttyBittyLivingSpace.dll",
+	"DLLEntryPoint" : "IttyBittyLivingSpace.Mod.Init",
     "DependsOn" : [ "CustomComponents", "IRBTModUtils" ],
 	"Manifest": [
         { "Type": "ShipModuleUpgrade", "Path": "Argo" },

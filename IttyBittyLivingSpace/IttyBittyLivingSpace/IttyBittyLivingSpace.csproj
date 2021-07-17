@@ -74,7 +74,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ModInit.cs" />
-    <Compile Include="Patches\Patches.cs" />
+    <Compile Include="ModText.cs" />
+    <Compile Include="Patches\TooltipPrefabPatches.cs" />
+    <Compile Include="Patches\SGCaptainsQuartersStatusScreenPatches.cs" />
+    <Compile Include="Patches\SimGameStatePatches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="ModConfig.cs" />
