@@ -1,6 +1,7 @@
 ﻿
 using BattleTech;
 using CustomComponents;
+using Localize;
 using System;
 using System.Collections.Generic;
 
@@ -45,7 +46,9 @@ namespace IttyBittyLivingSpace {
                 int mechCost = CaculateUpkeepCost(mechDef);
                 string mechName = string.IsNullOrEmpty(mechDef.Description.UIName) ? mechDef.Name : mechDef.Description.UIName; 
                 Mod.Log.Debug?.Write($"  Adding mech:{mechName} with cost:{mechCost}");
-                labels.Add(new KeyValuePair<string, int>("UPKEEP: " + mechName, mechCost));
+
+                string upkeepLabel = new Text(Mod.LocalizedText.Labels[ModText.LT_Label_Mech_Upkeep], new object[] { mechName }).ToString();
+                labels.Add(new KeyValuePair<string, int>(upkeepLabel, mechCost));
             }
 
             return labels;
@@ -151,7 +154,7 @@ namespace IttyBittyLivingSpace {
         }
 
         public static int CalculateTotalForGearCargo(SimGameState sgs, double totalUnits) {
-            Mod.Log.Debug?.Write($" === Calculating Cargo Cost for Gear=== ");
+            Mod.Log.Info?.Write($" === Calculating Cargo Cost for Gear=== ");
 
             double factoredSize = Math.Ceiling(totalUnits * Mod.Config.GearFactor);
             Mod.Log.Info?.Write($"  totalUnits:{totalUnits} x factor:{Mod.Config.GearFactor} = {factoredSize}");
@@ -272,8 +275,11 @@ namespace IttyBittyLivingSpace {
             List<string> mechNames = new List<string>();
             foreach (KeyValuePair<int, MechDef> entry in sgs.ActiveMechs) {
                 MechDef mechDef = entry.Value;
-                mechNames.Add(mechDef.Name);
-                Mod.Log.Debug?.Write($"SGCQSS:RD - excluding mech name:({mechDef.Name})");
+                // localization will change the name of the string, but somehow mechDef.name (which is an getter returing description.name) doesn't 
+                //   come through translated. Manually force a translation, if one exists.
+                string translatedName = new Text(mechDef.Name).ToString();
+                mechNames.Add(translatedName);
+                Mod.Log.Debug?.Write($"SGCQSS:RD - excluding mech name: '{translatedName}'");
             }
 
             List<KeyValuePair<string, int>> filteredList = new List<KeyValuePair<string, int>>();
