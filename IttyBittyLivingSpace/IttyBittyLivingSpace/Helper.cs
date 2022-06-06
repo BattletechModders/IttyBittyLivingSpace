@@ -128,8 +128,9 @@ namespace IttyBittyLivingSpace {
                 if (mcRef.Def != null) {
                     int itemCount = sgs.GetItemCount(mcRef.Def.Description, mcRef.Def.GetType(), sgs.GetItemCountDamageType(mcRef));
                     float itemSize = CalculateGearStorageSize(mcRef.Def);
-                    Mod.Log.Debug?.Write($"  Inventory item:({mcRef.Def.Description.Id}) size:{itemSize} qty:{itemCount}");
-                    totalUnits += itemSize;
+                    float totalSizeForItem = itemCount * itemSize;
+                    Mod.Log.Debug?.Write($"  Inventory item:({mcRef.Def.Description.Id}) size:{itemSize} qty:{itemCount} total:{totalSizeForItem}");
+                    totalUnits += totalSizeForItem;
                 } else {
                     Mod.Log.Info?.Write($"  Gear ref missing for:{mcRef.ToString()}! Skipping size calculation.");
                 }
