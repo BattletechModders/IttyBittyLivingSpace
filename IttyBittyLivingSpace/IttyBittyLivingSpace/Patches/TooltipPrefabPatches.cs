@@ -71,7 +71,7 @@ namespace IttyBittyLivingSpace {
                     Mod.Log.Info?.Write($"  totalUnits:{componentStorageSize} x factor:{Mod.Config.GearFactor} = {factoredSize}");
                 }
 
-                string costLabel = new Text(Mod.LocalizedText.Tooltips[ModText.LT_Tooltip_Cargo_Chassis], 
+                string costLabel = new Text(Mod.LocalizedText.Tooltips[ModText.LT_Tooltip_Cargo_Equipment], 
                     new object[] { SimGameState.GetCBillString(storageCost), componentStorageSize }).ToString();
                 Text newDetails = new Text(mcDef.Description.Details + costLabel);
                 Mod.Log.Debug?.Write($"  Setting details: {newDetails}u");
@@ -110,7 +110,7 @@ namespace IttyBittyLivingSpace {
                     Mod.Log.Info?.Write($"  totalUnits:{weaponStorageSize} x factor:{Mod.Config.GearFactor} = {factoredSize}");
                 }
 
-                string costLabel = new Text(Mod.LocalizedText.Tooltips[ModText.LT_Tooltip_Cargo_Chassis],
+                string costLabel = new Text(Mod.LocalizedText.Tooltips[ModText.LT_Tooltip_Cargo_Weapon],
                     new object[] { SimGameState.GetCBillString(storageCost), weaponStorageSize }).ToString();
                 Text newDetails = new Text(weaponDef.Description.Details + costLabel);
                 Mod.Log.Debug?.Write($"  Setting details: {newDetails}u");
