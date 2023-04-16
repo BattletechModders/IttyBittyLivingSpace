@@ -1,9 +1,12 @@
 ﻿
-namespace IttyBittyLivingSpace {
+namespace IttyBittyLivingSpace
+{
 
-    public static class ModState {
+    public static class ModState
+    {
 
-        public static void Reset() {
+        public static void Reset()
+        {
             // Reinitialize state
         }
     }

@@ -1,15 +1,16 @@
-﻿using Harmony;
-using IRBTModUtils.Logging;
+﻿using IRBTModUtils.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
-namespace IttyBittyLivingSpace {
+namespace IttyBittyLivingSpace
+{
 
-    public static class Mod {
-        
+    public static class Mod
+    {
+
         public const string HarmonyPackage = "us.frostraptor.IttyBittyLivingSpace";
         public const string LogName = "itty_bitty_living_space";
         public const string LogLabel = "IBLS";
@@ -74,8 +75,7 @@ namespace IttyBittyLivingSpace {
             CustomComponents.Registry.RegisterSimpleCustomComponents(Assembly.GetExecutingAssembly());
 
             // Initialize harmony patches
-            var harmony = HarmonyInstance.Create(HarmonyPackage);
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), HarmonyPackage);
         }
 
     }

@@ -2,9 +2,11 @@
 
 using System.Collections.Generic;
 
-namespace IttyBittyLivingSpace {
+namespace IttyBittyLivingSpace
+{
 
-    public class ModConfig {
+    public class ModConfig
+    {
 
         public const string SC_Upkeep = "IBLS_MechbayUpkeepModifier";
         public const string SC_Cargo = "IBLS_CargoStorageModifier";
@@ -27,7 +29,8 @@ namespace IttyBittyLivingSpace {
         public float UpkeepChassisMulti = 0.010f;
         public Dictionary<string, float> UpkeepChassisTagMultis = new Dictionary<string, float>();
 
-        public void LogConfig() {
+        public void LogConfig()
+        {
             Mod.Log.Info?.Write("=== MOD CONFIG BEGIN ===");
             Mod.Log.Info?.Write($"  DEBUG: {this.Debug}  TRACE: {this.Trace}");
             Mod.Log.Info?.Write($"  Storage: Gear       - Factor:x{GearFactor}  CostPerUnit:{GearCostPerUnit} Exponent:{GearExponent}");
@@ -35,6 +38,6 @@ namespace IttyBittyLivingSpace {
             Mod.Log.Info?.Write($"  Upkeep: gearMulti: x{UpkeepGearMulti} chassisMulti: x{UpkeepChassisMulti}");
             Mod.Log.Info?.Write("=== MOD CONFIG END ===");
         }
-        
+
     }
 }

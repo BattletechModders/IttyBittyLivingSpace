@@ -1,18 +1,20 @@
-﻿using BattleTech;
-using BattleTech.UI.Tooltips;
-using Harmony;
+﻿using BattleTech.UI.Tooltips;
 using Localize;
 using System;
 using TMPro;
 
-namespace IttyBittyLivingSpace {
+namespace IttyBittyLivingSpace
+{
 
     [HarmonyPatch(typeof(TooltipPrefab_Chassis), "SetData")]
     [HarmonyAfter(new string[] { "us.frostraptor.IRUITweaks" })]
-    public static class TooltipPrefab_Chassis_SetData {
-        public static void Postfix(object data, TextMeshProUGUI ___descriptionText) {
+    public static class TooltipPrefab_Chassis_SetData
+    {
+        public static void Postfix(object data, TextMeshProUGUI ___descriptionText)
+        {
             Mod.Log.Debug?.Write($"TP_C:SD - Init");
-            if (data != null && ___descriptionText != null) {
+            if (data != null && ___descriptionText != null)
+            {
                 ChassisDef chassisDef = (ChassisDef)data;
                 double storageTons = Helper.CalculateChassisTonnage(chassisDef);
 
@@ -21,22 +23,27 @@ namespace IttyBittyLivingSpace {
                 double totalTonnage = Helper.CalculateTonnageForAllMechParts(sgs);
 
                 int storageCost = 0;
-                if (totalTonnage > 0) {
+                if (totalTonnage > 0)
+                {
                     int totalCost = Helper.CalculateTotalForMechPartsCargo(sgs, totalTonnage);
                     double tonnageFraction = storageTons / totalTonnage;
                     storageCost = (int)Math.Ceiling(totalCost * tonnageFraction);
-                } else {
+                }
+                else
+                {
                     double factoredTonnage = Math.Ceiling(storageTons * Mod.Config.PartsFactor);
                     double scaledTonnage = Math.Pow(factoredTonnage, Mod.Config.PartsExponent);
                     storageCost = (int)(Mod.Config.PartsCostPerTon * scaledTonnage);
                 }
 
-                string costLabel = new Text(Mod.LocalizedText.Tooltips[ModText.LT_Tooltip_Cargo_Chassis], 
+                string costLabel = new Text(Mod.LocalizedText.Tooltips[ModText.LT_Tooltip_Cargo_Chassis],
                     new object[] { SimGameState.GetCBillString(storageCost), storageTons }).ToString();
-                Text newDetails =  new Text(chassisDef.Description.Details + costLabel);
+                Text newDetails = new Text(chassisDef.Description.Details + costLabel);
                 Mod.Log.Debug?.Write($"  Setting details: {newDetails}u");
                 ___descriptionText.SetText(newDetails.ToString());
-            } else {
+            }
+            else
+            {
                 Mod.Log.Debug?.Write($"TP_C:SD - Skipping");
             }
         }
@@ -44,11 +51,14 @@ namespace IttyBittyLivingSpace {
 
     [HarmonyPatch(typeof(TooltipPrefab_Equipment), "SetData")]
     [HarmonyAfter(new string[] { "us.frostraptor.IRUITweaks" })]
-    public static class TooltipPrefab_Equipment_SetData {
-        public static void Postfix(object data, TextMeshProUGUI ___detailText) {
+    public static class TooltipPrefab_Equipment_SetData
+    {
+        public static void Postfix(object data, TextMeshProUGUI ___detailText)
+        {
             Mod.Log.Debug?.Write($"TP_E:SD - Init");
             SimGameState sgs = UnityGameInstance.BattleTechGame.Simulation;
-            if (data != null && ___detailText != null && sgs != null) {
+            if (data != null && ___detailText != null && sgs != null)
+            {
 
                 // Calculate total gear storage size
                 MechComponentDef mcDef = (MechComponentDef)data;
@@ -56,14 +66,17 @@ namespace IttyBittyLivingSpace {
                 double totalSize = Helper.GetGearInventorySize(sgs);
 
                 int storageCost = 0;
-                if (totalSize > 0) {
+                if (totalSize > 0)
+                {
                     // Handle exponentiation of cost
                     int totalCost = Helper.CalculateTotalForGearCargo(sgs, totalSize);
 
                     double sizeFraction = componentStorageSize / totalSize;
                     storageCost = (int)Math.Ceiling(totalCost * sizeFraction);
                     Mod.Log.Debug?.Write($"    totalCost: {totalCost}  storageSize: {componentStorageSize}  sizeFraction: {sizeFraction}  fractionalCost: {storageCost}");
-                } else {
+                }
+                else
+                {
                     // Assume no exponentiation when there is no gear
                     double factoredSize = Math.Ceiling(componentStorageSize * Mod.Config.GearFactor);
                     double scaledUnits = Math.Pow(factoredSize, Mod.Config.GearExponent);
@@ -71,12 +84,14 @@ namespace IttyBittyLivingSpace {
                     Mod.Log.Info?.Write($"  totalUnits:{componentStorageSize} x factor:{Mod.Config.GearFactor} = {factoredSize}");
                 }
 
-                string costLabel = new Text(Mod.LocalizedText.Tooltips[ModText.LT_Tooltip_Cargo_Equipment], 
+                string costLabel = new Text(Mod.LocalizedText.Tooltips[ModText.LT_Tooltip_Cargo_Equipment],
                     new object[] { SimGameState.GetCBillString(storageCost), componentStorageSize }).ToString();
                 Text newDetails = new Text(mcDef.Description.Details + costLabel);
                 Mod.Log.Debug?.Write($"  Setting details: {newDetails}u");
                 ___detailText.SetText(newDetails.ToString());
-            } else {
+            }
+            else
+            {
                 Mod.Log.Debug?.Write($"TP_E:SD - Skipping");
             }
         }
@@ -84,11 +99,14 @@ namespace IttyBittyLivingSpace {
 
     [HarmonyPatch(typeof(TooltipPrefab_Weapon), "SetData")]
     [HarmonyAfter(new string[] { "us.frostraptor.IRUITweaks" })]
-    public static class TooltipPrefab_Weapon_SetData {
-        public static void Postfix(object data, TextMeshProUGUI ___body) {
+    public static class TooltipPrefab_Weapon_SetData
+    {
+        public static void Postfix(object data, TextMeshProUGUI ___body)
+        {
             Mod.Log.Debug?.Write($"TP_W:SD - Init - data:{data} body:{___body}");
             SimGameState sgs = UnityGameInstance.BattleTechGame.Simulation;
-            if (data != null && ___body != null && sgs != null) {
+            if (data != null && ___body != null && sgs != null)
+            {
                 WeaponDef weaponDef = (WeaponDef)data;
                 float weaponStorageSize = Helper.CalculateGearStorageSize(weaponDef);
 
@@ -96,13 +114,16 @@ namespace IttyBittyLivingSpace {
                 double totalSize = Helper.GetGearInventorySize(sgs);
 
                 int storageCost = 0;
-                if (totalSize > 0) {
+                if (totalSize > 0)
+                {
                     // Handle exponentiation of cost
                     int totalCost = Helper.CalculateTotalForGearCargo(sgs, totalSize);
                     double sizeFraction = weaponStorageSize / totalSize;
                     storageCost = (int)Math.Ceiling(totalCost * sizeFraction);
                     Mod.Log.Debug?.Write($"    totalCost: {totalCost}  storageSize: {weaponStorageSize}  sizeFraction: {sizeFraction}  fractionalCost: {storageCost}");
-                } else {
+                }
+                else
+                {
                     // Assume no exponentiation when there is no gear
                     double factoredSize = Math.Ceiling(weaponStorageSize * Mod.Config.GearFactor);
                     double scaledUnits = Math.Pow(factoredSize, Mod.Config.GearExponent);
@@ -115,7 +136,9 @@ namespace IttyBittyLivingSpace {
                 Text newDetails = new Text(weaponDef.Description.Details + costLabel);
                 Mod.Log.Debug?.Write($"  Setting details: {newDetails}u");
                 ___body.SetText(newDetails.ToString());
-            } else {
+            }
+            else
+            {
                 Mod.Log.Debug?.Write($"TP_W:SD - Skipping");
             }
         }

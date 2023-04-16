@@ -1,35 +1,41 @@
-﻿
-using BattleTech;
-using CustomComponents;
+﻿using CustomComponents;
 using Localize;
 using System;
 using System.Collections.Generic;
 
-namespace IttyBittyLivingSpace {
+namespace IttyBittyLivingSpace
+{
 
     [CustomComponent("IBLS")]
-    public class IBLS : SimpleCustomComponent {
+    public class IBLS : SimpleCustomComponent
+    {
         public float CostMulti;
         public float StorageSize;
     }
 
-    public class ExpensesSorter : IComparer<KeyValuePair<string, int>> {
-        public int Compare(KeyValuePair<string, int> x, KeyValuePair<string, int> y) {
+    public class ExpensesSorter : IComparer<KeyValuePair<string, int>>
+    {
+        public int Compare(KeyValuePair<string, int> x, KeyValuePair<string, int> y)
+        {
             int cmp = y.Value.CompareTo(x.Value);
-            if (cmp == 0) {
+            if (cmp == 0)
+            {
                 cmp = y.Key.CompareTo(x.Key);
             }
             return cmp;
         }
     }
 
-    public static class Helper {
-        
-        public static int CalculateTotalForUpkeep(SimGameState sgs) {
+    public static class Helper
+    {
+
+        public static int CalculateTotalForUpkeep(SimGameState sgs)
+        {
             Mod.Log.Info?.Write($" === Calculating Active Mech Costs === ");
 
             int totalCost = 0;
-            foreach (KeyValuePair<int, MechDef> entry in sgs.ActiveMechs) {
+            foreach (KeyValuePair<int, MechDef> entry in sgs.ActiveMechs)
+            {
                 totalCost += CaculateUpkeepCost(entry.Value);
             }
 
@@ -37,14 +43,16 @@ namespace IttyBittyLivingSpace {
             return totalCost;
         }
 
-        public static List<KeyValuePair<string, int>> GetUpkeepLabels(SimGameState sgs) {
+        public static List<KeyValuePair<string, int>> GetUpkeepLabels(SimGameState sgs)
+        {
             Mod.Log.Info?.Write($" === Calculating Active Mech Labels === ");
 
             List<KeyValuePair<string, int>> labels = new List<KeyValuePair<string, int>>();
-            foreach (KeyValuePair<int, MechDef> entry in sgs.ActiveMechs) {
+            foreach (KeyValuePair<int, MechDef> entry in sgs.ActiveMechs)
+            {
                 MechDef mechDef = entry.Value;
                 int mechCost = CaculateUpkeepCost(mechDef);
-                string mechName = string.IsNullOrEmpty(mechDef.Description.UIName) ? mechDef.Name : mechDef.Description.UIName; 
+                string mechName = string.IsNullOrEmpty(mechDef.Description.UIName) ? mechDef.Name : mechDef.Description.UIName;
                 Mod.Log.Debug?.Write($"  Adding mech:{mechName} with cost:{mechCost}");
 
                 string upkeepLabel = new Text(Mod.LocalizedText.Labels[ModText.LT_Label_Mech_Upkeep], new object[] { mechName }).ToString();
@@ -54,8 +62,10 @@ namespace IttyBittyLivingSpace {
             return labels;
         }
 
-        private static int CaculateUpkeepCost(MechDef mechDef) {
-            if (mechDef == null || mechDef.Description == null) {
+        private static int CaculateUpkeepCost(MechDef mechDef)
+        {
+            if (mechDef == null || mechDef.Description == null)
+            {
                 Mod.Log.Debug?.Write($"  MechDef or mechDef description is null, skipping.");
             }
 
@@ -63,21 +73,29 @@ namespace IttyBittyLivingSpace {
 
             // Calculate any chassis multipliers
             double tagsMultiplier = 1.0;
-            if (mechDef.Chassis != null && mechDef.Chassis.ChassisTags != null) {
-                foreach (string chassisTag in mechDef.Chassis.ChassisTags) {
-                    if (chassisTag == null) {
+            if (mechDef.Chassis != null && mechDef.Chassis.ChassisTags != null)
+            {
+                foreach (string chassisTag in mechDef.Chassis.ChassisTags)
+                {
+                    if (chassisTag == null)
+                    {
                         Mod.Log.Debug?.Write($"  tag:({chassisTag}) skipping");
                         continue;
-                    } else {
+                    }
+                    else
+                    {
                         Mod.Log.Debug?.Write($"  processing tag:({chassisTag}) ");
                     }
 
-                    if (Mod.Config.UpkeepChassisTagMultis.ContainsKey(chassisTag)) {
+                    if (Mod.Config.UpkeepChassisTagMultis.ContainsKey(chassisTag))
+                    {
                         tagsMultiplier += Mod.Config.UpkeepChassisTagMultis[chassisTag];
                         Mod.Log.Debug?.Write($"  tag:{chassisTag} adding multi:{Mod.Config.UpkeepChassisTagMultis[chassisTag]}");
                     }
                 }
-            } else {
+            }
+            else
+            {
                 Mod.Log.Debug?.Write($"  chassis has no chassisTags");
             }
 
@@ -86,15 +104,19 @@ namespace IttyBittyLivingSpace {
 
             // Calculate any component costs
             int componentCost = 0;
-            foreach (MechComponentRef mcRef in mechDef.Inventory) {
+            foreach (MechComponentRef mcRef in mechDef.Inventory)
+            {
                 string compName = mcRef.Def.Description.Name;
                 int compRawCost = mcRef.Def.Description.Cost;
 
                 int modifiedCost = 0;
-                if (mcRef.Is<IBLS>(out IBLS ibls)) {
+                if (mcRef.Is<IBLS>(out IBLS ibls))
+                {
                     Mod.Log.Debug?.Write($"  Override multiplier:{ibls.CostMulti} instead of:{Mod.Config.UpkeepGearMulti}");
                     modifiedCost = (int)Math.Ceiling(compRawCost * ibls.CostMulti);
-                } else {
+                }
+                else
+                {
                     modifiedCost = (int)Math.Ceiling(compRawCost * Mod.Config.UpkeepGearMulti);
                 }
 
@@ -107,14 +129,18 @@ namespace IttyBittyLivingSpace {
 
             SimGameState simGameState = UnityGameInstance.BattleTechGame.Simulation;
             Statistic upkeepStat = simGameState.CompanyStats.GetStatistic(ModConfig.SC_Upkeep);
-            if (upkeepStat != null) {
-                try {
+            if (upkeepStat != null)
+            {
+                try
+                {
                     float statMulti = upkeepStat.Value<float>();
                     Mod.Log.Debug?.Write($" Statistic {ModConfig.SC_Upkeep} has multi:{statMulti}");
                     float modifiedCosts = upkeepCost * statMulti;
                     Mod.Log.Info?.Write($" Statistic modified cost:{modifiedCosts} = statMulti:{statMulti} x upkeepCost:{upkeepCost}");
                     upkeepCost = (int)Math.Ceiling(modifiedCosts);
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Mod.Log.Info?.Write($"Failed to read {ModConfig.SC_Upkeep} due to exception:{e.Message}");
                 }
             }
@@ -122,16 +148,21 @@ namespace IttyBittyLivingSpace {
             return upkeepCost;
         }
 
-        public static float GetGearInventorySize(SimGameState sgs) {
+        public static float GetGearInventorySize(SimGameState sgs)
+        {
             float totalUnits = 0.0f;
-            foreach (MechComponentRef mcRef in sgs.GetAllInventoryItemDefs()) {
-                if (mcRef.Def != null) {
+            foreach (MechComponentRef mcRef in sgs.GetAllInventoryItemDefs())
+            {
+                if (mcRef.Def != null)
+                {
                     int itemCount = sgs.GetItemCount(mcRef.Def.Description, mcRef.Def.GetType(), sgs.GetItemCountDamageType(mcRef));
                     float itemSize = CalculateGearStorageSize(mcRef.Def);
                     float totalSizeForItem = itemCount * itemSize;
                     Mod.Log.Debug?.Write($"  Inventory item:({mcRef.Def.Description.Id}) size:{itemSize} qty:{itemCount} total:{totalSizeForItem}");
                     totalUnits += totalSizeForItem;
-                } else {
+                }
+                else
+                {
                     Mod.Log.Info?.Write($"  Gear ref missing for:{mcRef.ToString()}! Skipping size calculation.");
                 }
             }
@@ -140,13 +171,15 @@ namespace IttyBittyLivingSpace {
             return totalUnits;
         }
 
-        public static float CalculateGearStorageSize(MechComponentDef mcDef) {
-            
+        public static float CalculateGearStorageSize(MechComponentDef mcDef)
+        {
+
             string itemId = mcDef.Description.Id;
             float itemSize = mcDef.InventorySize;
             Mod.Log.Debug?.Write($"  Inventory item:({mcDef.Description.Id}) size:{mcDef.InventorySize}");
 
-            if (mcDef.Is<IBLS>(out IBLS ibls)) {
+            if (mcDef.Is<IBLS>(out IBLS ibls))
+            {
                 Mod.Log.Debug?.Write($"  Overriding size:{ibls.StorageSize} instead of:{mcDef.InventorySize}");
                 itemSize = ibls.StorageSize;
             }
@@ -154,7 +187,8 @@ namespace IttyBittyLivingSpace {
             return itemSize;
         }
 
-        public static int CalculateTotalForGearCargo(SimGameState sgs, double totalUnits) {
+        public static int CalculateTotalForGearCargo(SimGameState sgs, double totalUnits)
+        {
             Mod.Log.Info?.Write($" === Calculating Cargo Cost for Gear=== ");
 
             double factoredSize = Math.Ceiling(totalUnits * Mod.Config.GearFactor);
@@ -166,14 +200,18 @@ namespace IttyBittyLivingSpace {
 
             SimGameState simGameState = UnityGameInstance.BattleTechGame.Simulation;
             Statistic upkeepStat = simGameState.CompanyStats.GetStatistic(ModConfig.SC_Cargo);
-            if (upkeepStat != null) {
-                try {
+            if (upkeepStat != null)
+            {
+                try
+                {
                     float statMulti = upkeepStat.Value<float>();
                     Mod.Log.Debug?.Write($" Statistic {ModConfig.SC_Cargo} has multi:{statMulti}");
                     float modifiedCosts = totalCost * statMulti;
                     Mod.Log.Info?.Write($" Statistic modified cost:{modifiedCosts} = statMulti:{statMulti} x totalCosts:{totalCost}");
                     totalCost = (int)Math.Ceiling(modifiedCosts);
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Mod.Log.Info?.Write($"Failed to read {ModConfig.SC_Cargo} due to exception:{e.Message}");
                 }
             }
@@ -181,9 +219,11 @@ namespace IttyBittyLivingSpace {
             return (int)Math.Ceiling((double)totalCost);
         }
 
-        public static double CalculateTonnageForAllMechParts(SimGameState sgs) {
+        public static double CalculateTonnageForAllMechParts(SimGameState sgs)
+        {
             double allPartsTonnage = 0;
-            foreach (ChassisDef cDef in sgs.GetAllInventoryMechDefs(true)) {
+            foreach (ChassisDef cDef in sgs.GetAllInventoryMechDefs(true))
+            {
 
                 double chassisTonnage = CalculateChassisTonnage(cDef);
                 allPartsTonnage += chassisTonnage;
@@ -193,17 +233,21 @@ namespace IttyBittyLivingSpace {
             return allPartsTonnage;
         }
 
-        public static double CalculateChassisTonnage(ChassisDef cDef) {
+        public static double CalculateChassisTonnage(ChassisDef cDef)
+        {
             int itemCount = cDef.MechPartCount;
             Mod.Log.Debug?.Write($"ChassisDef: {cDef.Description.Id} has count: x{itemCount} with max: x{cDef.MechPartMax}");
 
             // TODO: In the case of multiple assembled mechs, would MechPartMax here be parts * chassis? I suspect this
             //  could be causing the bug that granner reported. Need a log to verify.
             double rawPartsTonnage;
-            if (cDef.MechPartCount == 0) {
+            if (cDef.MechPartCount == 0)
+            {
                 Mod.Log.Debug?.Write($"  Complete chassis, adding tonnage:{cDef.Tonnage}");
                 rawPartsTonnage = cDef.Tonnage;
-            } else {
+            }
+            else
+            {
                 float mechPartRatio = (float)cDef.MechPartCount / (float)cDef.MechPartMax;
                 float fractionalTonnage = cDef.Tonnage * mechPartRatio;
                 Mod.Log.Debug?.Write($"  Mech parts ratio: {mechPartRatio} mechTonnage:{cDef.Tonnage} fractionalTonnage:{fractionalTonnage}");
@@ -216,21 +260,29 @@ namespace IttyBittyLivingSpace {
 
             // Check for tags that influence the tonnage
             double tagsMultiplier = 1.0;
-            if (cDef.ChassisTags != null) {
-                foreach (string chassisTag in cDef.ChassisTags) {
-                    if (chassisTag == null) {
+            if (cDef.ChassisTags != null)
+            {
+                foreach (string chassisTag in cDef.ChassisTags)
+                {
+                    if (chassisTag == null)
+                    {
                         Mod.Log.Debug?.Write($"  tag:({chassisTag}) skipping");
                         continue;
-                    } else {
+                    }
+                    else
+                    {
                         Mod.Log.Debug?.Write($"  processing tag:({chassisTag}) ");
                     }
 
-                    if (Mod.Config.PartsStorageTagMultis.ContainsKey(chassisTag)) {
+                    if (Mod.Config.PartsStorageTagMultis.ContainsKey(chassisTag))
+                    {
                         tagsMultiplier += Mod.Config.PartsStorageTagMultis[chassisTag];
                         Mod.Log.Debug?.Write($"  tag:{chassisTag} adding multi:{Mod.Config.PartsStorageTagMultis[chassisTag]}");
                     }
                 }
-            } else {
+            }
+            else
+            {
                 Mod.Log.Debug?.Write($"  chassis has no chassisTags");
             }
 
@@ -241,7 +293,8 @@ namespace IttyBittyLivingSpace {
             return modifiedTonnage;
         }
 
-        public static int CalculateTotalForMechPartsCargo(SimGameState sgs, double totalTonnage) {
+        public static int CalculateTotalForMechPartsCargo(SimGameState sgs, double totalTonnage)
+        {
             Mod.Log.Debug?.Write($" === Calculating Cargo Cost for Mech Parts === ");
 
             double factoredTonnage = Math.Ceiling(totalTonnage * Mod.Config.PartsFactor);
@@ -255,14 +308,18 @@ namespace IttyBittyLivingSpace {
 
             SimGameState simGameState = UnityGameInstance.BattleTechGame.Simulation;
             Statistic upkeepStat = simGameState.CompanyStats.GetStatistic(ModConfig.SC_Cargo);
-            if (upkeepStat != null) {
-                try {
+            if (upkeepStat != null)
+            {
+                try
+                {
                     float statMulti = upkeepStat.Value<float>();
                     Mod.Log.Debug?.Write($" Statistic {ModConfig.SC_Cargo} has multi:{statMulti}");
                     float modifiedCosts = totalCost * statMulti;
                     Mod.Log.Info?.Write($" Statistic modified cost:{modifiedCosts} = statMulti:{statMulti} x totalCosts:{totalCost}");
                     totalCost = (int)Math.Ceiling(modifiedCosts);
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Mod.Log.Info?.Write($"Failed to read {ModConfig.SC_Cargo} due to exception:{e.Message}");
                 }
             }
@@ -270,11 +327,13 @@ namespace IttyBittyLivingSpace {
             return (int)Math.Ceiling((double)totalCost);
         }
 
-        public static List<KeyValuePair<string, int>> FilterActiveMechs(List<KeyValuePair<string, int>> keysAndValues, SimGameState sgs) {
-            
+        public static List<KeyValuePair<string, int>> FilterActiveMechs(List<KeyValuePair<string, int>> keysAndValues, SimGameState sgs)
+        {
+
             // Find active mechs
             List<string> mechNames = new List<string>();
-            foreach (KeyValuePair<int, MechDef> entry in sgs.ActiveMechs) {
+            foreach (KeyValuePair<int, MechDef> entry in sgs.ActiveMechs)
+            {
                 MechDef mechDef = entry.Value;
                 // localization will change the name of the string, but somehow mechDef.name (which is an getter returing description.name) doesn't 
                 //   come through translated. Manually force a translation, if one exists.
@@ -284,10 +343,14 @@ namespace IttyBittyLivingSpace {
             }
 
             List<KeyValuePair<string, int>> filteredList = new List<KeyValuePair<string, int>>();
-            foreach (KeyValuePair<string, int> kvp in keysAndValues) {
-                if (!mechNames.Contains(kvp.Key)) {
+            foreach (KeyValuePair<string, int> kvp in keysAndValues)
+            {
+                if (!mechNames.Contains(kvp.Key))
+                {
                     filteredList.Add(kvp);
-                } else {
+                }
+                else
+                {
                     mechNames.Remove(kvp.Key);
                 }
             }
